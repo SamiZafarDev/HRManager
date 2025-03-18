@@ -376,7 +376,7 @@ class DocManagerController extends Controller
 
         $result = $llama->generateText($truncatedPrompt);
 
-        if ($result['response'] != null) {
+        if (isset($result['response'])) {
             $data = [
                 'prompt' => $prompt,
                 'response' => $result['response']
@@ -384,7 +384,7 @@ class DocManagerController extends Controller
             return $data;
         }
 
-        return "Data can't be processed.";
+        return $result;
     }
 
     /**
@@ -572,15 +572,16 @@ class DocManagerController extends Controller
             // Extract the email template from the response
             $emailTemplate = $emailResponse->getData()->email_template;
 
-            $emailTemplate = $emailHandlerController->getEmailWithAttributes($emailTemplate, $request->doc_id);
+            $emailTemplate = $emailHandlerController->getEmailWithAttributes($emailTemplate, $request->doc_id)->getdata();
+            $emailTemplate = $emailTemplate->email_template;
+            // dd($emailTemplate);
 
             $email = $request->email;
             if (empty($email)) {
                 throw new \Exception("No email provided.");
             }
 
-            $subject = "Your Subject Here";
-            $emailTemplate = $emailResponse->getData()->email_template;
+            $subject = "Interview Invite";
             $message = $emailTemplate; // Use the email template as the message
 
             Mail::raw($message, function ($mail) use ($email, $subject) {

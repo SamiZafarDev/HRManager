@@ -145,10 +145,12 @@ $(document).ready(function() {
             let emailCell = $('<td></td>');
             if (doc.email) {
                 emailCell.text(doc.email);
-                let emailButton = $('<button></button>').text("Send Email").addClass("btn btn-primary").on('click', function() {
-                    sendEmail(doc.email, row);
-                });
-                emailCell.append('<br>').append(emailButton);
+
+                // Send Email Btn
+                // let emailButton = $('<button></button>').text("Send Email").addClass("btn btn-primary").on('click', function() {
+                //     sendEmail(doc.email, row);
+                // });
+                // emailCell.append('<br>').append(emailButton);
             } else {
                 emailCell.text("Email not found");
             }

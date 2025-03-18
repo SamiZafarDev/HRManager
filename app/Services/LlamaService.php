@@ -10,18 +10,19 @@ class LlamaService
     public function __construct()
     {
         $this->apiUrl = env('LLAMA_API_URL', 'http://localhost:11434/api/generate');
+        // $this->apiUrl = env('LLAMA_API_URL', 'https://api.deepseek.com/chat/completions');
     }
 
     public function generateText($prompt)
     {
-        // $response = Http::timeout(500)->post($this->apiUrl, [
-        //     'model' => 'deepseek-v2', // 'llama3.2',
-        //     'prompt' => $prompt,
-        //     'stream' => false,
-        // ]);
-        // return $response->json();
+        $response = Http::timeout(500)->post($this->apiUrl, [
+            'model' => 'deepseek-v2', // 'llama3.2',
+            'prompt' => $prompt,
+            'stream' => false,
+        ]);
+        return $response->json();
 
-        return $this->deepseekApi();
+        return $this->deepseekApi($prompt);
     }
 
     private function deepseekApi($prompt){
