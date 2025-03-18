@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <title>Email Template</title>
 </head>
@@ -9,3 +11,4 @@
     <p>Best regards,</p>
     <p>{company name} HR Team</p>
 </body>
+</html>

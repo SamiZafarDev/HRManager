@@ -13,9 +13,7 @@
         @csrf
         <div class="form-group">
             <label for="email_template">Enter Email Template</label>
-            <textarea id="email_template" name="email_template" class="form-control" rows="5" required>{{ $staticEmail ? $staticEmail->email_template : '' }}
-                @include('emailHandler.emailTemplate')
-            </textarea>
+            <textarea id="email_template" name="email_template" class="form-control" rows="10" required>{{ $staticEmail ? $staticEmail->email_template : '' }}</textarea>
         </div>
         <button type="submit" class="btn btn-primary" id="saveEmailTemplateBtn">Save Template</button>
     </form>

@@ -559,15 +559,29 @@ class DocManagerController extends Controller
     {
         $request->validate([
             'email' => 'required|string|email|max:255',
+            'doc_id' => 'required|exists:documents,id'
         ]);
+
         try {
+            // Instantiate the EmailHandlerController
+            $emailHandlerController = new EmailHandlerController();
+
+            // Call the get method and get the response
+            $emailResponse = $emailHandlerController->get();
+
+            // Extract the email template from the response
+            $emailTemplate = $emailResponse->getData()->email_template;
+
+            $emailTemplate = $emailHandlerController->getEmailWithAttributes($emailTemplate, $request->doc_id);
+
             $email = $request->email;
             if (empty($email)) {
                 throw new \Exception("No email provided.");
             }
 
             $subject = "Your Subject Here";
-            $message = "Your message here";
+            $emailTemplate = $emailResponse->getData()->email_template;
+            $message = $emailTemplate; // Use the email template as the message
 
             Mail::raw($message, function ($mail) use ($email, $subject) {
                 $mail->to($email)
@@ -579,6 +593,7 @@ class DocManagerController extends Controller
                 'message' => 'Email sent successfully',
             ]);
         } catch (\Throwable $th) {
+            dd($th->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to send email.',

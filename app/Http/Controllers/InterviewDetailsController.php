@@ -54,6 +54,9 @@ class InterviewDetailsController extends Controller
             'end_time' => $request->end_time,
         ]);
 
+        $DocManagerController = new DocManagerController();
+        $DocManagerController->sendEmailscheduleInterview($request);
+
         return redirect()->route('interviewDetails.index')->with('success', 'Interview detail created successfully.');
     }
 
