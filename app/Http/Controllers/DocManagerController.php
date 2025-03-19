@@ -32,16 +32,11 @@ class DocManagerController extends Controller
                 $this->uploadDocument($document, $user->id, $documentsUploaded);
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Document uploaded successfully',
-                'data' => [
-                    'documents' => $documentsUploaded,
-                    'path' => StorageFolder::DOCUMENTS->publicPath(),
-                ],
-            ]);
+            session()->flash('success', 'Document uploaded successfully.');
+            return redirect()->back();
         } catch (\Throwable $th) {
-            return response()->json(['error' => $th->getMessage()], 500);
+            session()->flash('error', 'Unable to upload document: ' . $th->getMessage());
+            return redirect()->back();
         }
     }
 
