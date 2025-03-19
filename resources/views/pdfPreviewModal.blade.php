@@ -67,7 +67,8 @@ function previewDocument(fileName) {
     let previewFrame = document.getElementById('documentPreview');
     let unsupportedMessage = document.getElementById('unsupportedMessage');
 
-    let fileUrl = `/storage/documents/${fileName}`;
+    let baseUrl = window.location.origin;
+    let fileUrl = `${baseUrl}/storage/documents/${fileName}`;
     let fileExtension = fileName.split('.').pop().toLowerCase();
 
     if (["pdf", "jpg", "png"].includes(fileExtension)) {

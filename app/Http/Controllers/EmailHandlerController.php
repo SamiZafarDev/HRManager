@@ -7,6 +7,7 @@ use App\Models\InterviewSchedule;
 use App\Models\StaticEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class EmailHandlerController extends Controller
 {
@@ -90,5 +91,18 @@ class EmailHandlerController extends Controller
         } catch (\Throwable $th) {
             echo('Can\'t find any end_time');
         }
+    }
+
+
+    public function sendEmail(Request $request)
+    {
+        $subject = "Interview Invite";
+        $message = $request->emailContent; // Use the email template as the message
+        $email = $request->email;
+
+        Mail::raw($message, function ($mail) use ($email, $subject) {
+            $mail->to($email)
+                ->subject($subject);
+        });
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DocManagerController;
+use App\Http\Controllers\EmailHandlerController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,10 +31,13 @@ Route::middleware('auth:sanctum')
         // Route::get('/document-details', [DocManagerController::class, 'getDocumentDetails'])->name('document.details');
 
 
-
     });
 Route::post('/chatWithAI', [DocManagerController::class, 'chatWithAI']);
 
 Route::get('/testSortResponseInRanks', [DocManagerController::class, 'testSortResponseInRanks']);
 
 Route::post('/sendEmailscheduleInterview', [DocManagerController::class, 'sendEmailscheduleInterview']);
+
+Route::post('/sendEmailTo', [EmailHandlerController::class, 'sendEmail']);
+
+
