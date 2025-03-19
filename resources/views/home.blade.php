@@ -34,11 +34,13 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        @if (session('success'))
-            alert("{{ session('success') }}");
-        @elseif (session('error'))
-            alert("{{ session('error') }}");
-        @endif
+        setTimeout(function () {
+            @if (session('success'))
+                alert("{{ session('success') }}");
+            @elseif (session('error'))
+                alert("{{ session('error') }}");
+            @endif
+        }, 100); // Delay the alert slightly to allow the page to render
     });
 </script>
 

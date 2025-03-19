@@ -120,14 +120,21 @@
                             <a class="nav-link" href="{{ route('interviewDetails.index') }}">Interview Schedule Details</a>
                         </li>
                     </ul>
+                    <!-- Profile Button -->
+                    <button class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#profileModal">
+                        Profile
+                    </button>
                 </div>
             </div>
         </nav>
 
+
         <!-- Main Content -->
         <main class="py-4">
+            @include('user.profileModal')
             @yield('content')
         </main>
+
     </div>
 
     <!-- Add your JavaScript files or CDN links here -->

@@ -89,6 +89,7 @@
                     </div>
 
                 </div>
+
                 <div class="justify-content-between align-items-center">
                     If already registered?
                     <a href="{{ route('login') }}" >

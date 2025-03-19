@@ -14,7 +14,7 @@ class AuthController extends Controller
     public function login()
     {
         if(Auth::user()){
-            return redirect()->intended('/home'); // Redirect to a dashboard or home page
+            return redirect()->intended('/home');
         }
         return view("auth.login");
     }
@@ -22,7 +22,7 @@ class AuthController extends Controller
     {
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $request->session()->regenerate();
-            return redirect()->intended('/home'); // Redirect to a dashboard or home page
+            return redirect()->intended('/home');
         }
 
         // Authentication failed
@@ -49,6 +49,15 @@ class AuthController extends Controller
         ]);
     }
 
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login');
+    }
+
     public function register()
     {
         return view("auth.register");
@@ -62,15 +71,21 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        if($request->header('Accept') == 'application/json'){
+        if ($request->header('Accept') == 'application/json') {
             return response()->json([
                 'status' => 'success',
                 'message' => 'User registered successfully',
                 'data' => $user,
             ], 201);
-        }
-        else{
-            return redirect()->intended('/home'); // Redirect to a dashboard or home page
+        } else {
+            // Attempt to log in the user
+            if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+                $request->session()->regenerate();
+                return redirect()->intended('/home'); // Redirect to homepage
+            }
+
+            // If login fails, redirect to login page
+            return redirect()->intended('/login')->with('error', 'Registration successful. Please log in.');
         }
     }
 }
