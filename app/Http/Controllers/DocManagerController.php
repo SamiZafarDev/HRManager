@@ -577,9 +577,9 @@ class DocManagerController extends Controller
             }
 
             $subject = "Interview Invite";
-            $message = $emailTemplate; // Use the email template as the message
+            $emailContent = $emailTemplate; // Use the email template as the message
 
-            Mail::raw($message, function ($mail) use ($email, $subject) {
+            Mail::html($emailContent, function ($mail) use ($email, $subject) {
                 $mail->to($email)
                     ->subject($subject);
             });

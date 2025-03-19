@@ -97,10 +97,22 @@ class EmailHandlerController extends Controller
     public function sendEmail(Request $request)
     {
         $subject = "Interview Invite";
-        $message = $request->emailContent; // Use the email template as the message
+        // $emailContent = $request->emailContent; // Use the email template as the message
         $email = $request->email;
 
-        Mail::raw($message, function ($mail) use ($email, $subject) {
+        // if(isset($emailContent))
+        {
+            $defaultTemplate = view('emailHandler.emailTemplate')->render();
+            $emailContent = html_entity_decode($defaultTemplate);
+        }
+
+        // Mail::raw($emailContent, function ($mail) use ($email, $subject) {
+        //     $mail->to($email)
+        //         ->subject($subject);
+        // });
+
+        // Send the email as HTML
+        Mail::html($emailContent, function ($mail) use ($email, $subject) {
             $mail->to($email)
                 ->subject($subject);
         });
