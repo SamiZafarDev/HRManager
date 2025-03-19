@@ -121,7 +121,7 @@
                         </li>
                     </ul>
                     <!-- Profile Button -->
-                    <button class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#profileModal">
+                    <button class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#profileModalSection">
                         Profile
                     </button>
                 </div>
@@ -131,13 +131,17 @@
 
         <!-- Main Content -->
         <main class="py-4">
-            @include('user.profileModal')
             @yield('content')
         </main>
 
     </div>
+    @include('user.profileModal')
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Add your JavaScript files or CDN links here -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/jss/bootstrap.bundle.min.js"></script>
 </body>
 </html>

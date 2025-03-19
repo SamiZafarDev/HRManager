@@ -74,7 +74,7 @@ $('#rankDocumentsForm').on('submit', function(event) {
 @include('pdfPreviewModal')
 
 <script>
-$('#fetchDocumentsBtn').on('click', function fetchDatas() {
+function fetchData() {
     $.ajax({
         url: "{{ route('getMyDocuments') }}",
         type: 'GET',
@@ -87,7 +87,9 @@ $('#fetchDocumentsBtn').on('click', function fetchDatas() {
             console.error("Error fetching document details:", error);
         }
     });
-});
+}
+$('#fetchDocumentsBtn').on('click', fetchData);
+fetchData();
 
 $(document).ready(function() {
     let storedData = localStorage.getItem('documentsData');
