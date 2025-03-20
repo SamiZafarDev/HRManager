@@ -110,11 +110,16 @@ class EmailHandlerController extends Controller
         //     $mail->to($email)
         //         ->subject($subject);
         // });
-
         // Send the email as HTML
-        Mail::html($emailContent, function ($mail) use ($email, $subject) {
-            $mail->to($email)
-                ->subject($subject);
-        });
+        try {
+            Mail::html($emailContent, function ($mail) use ($email, $subject) {
+                $mail->to($email)
+                    ->subject($subject);
+            });
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => $th->getMessage(),
+            ]);
+        }
     }
 }
