@@ -2,6 +2,8 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\Rules\Enum;
+use OpenAI;
 
 class LlamaService
 {
@@ -15,14 +17,14 @@ class LlamaService
 
     public function generateText($prompt)
     {
-        $response = Http::timeout(500)->post($this->apiUrl, [
-            'model' => 'deepseek-v2', // 'llama3.2',
-            'prompt' => $prompt,
-            'stream' => false,
-        ]);
-        return $response->json();
+        // $response = Http::timeout(500)->post($this->apiUrl, [
+        //     'model' => 'deepseek-v2', // 'llama3.2',
+        //     'prompt' => $prompt,
+        //     'stream' => false,
+        // ]);
+        // return $response->json();
 
-        return $this->deepseekApi($prompt);
+        return $this->sendToChatGPT($prompt);
     }
 
     private function deepseekApi($prompt){
@@ -39,6 +41,42 @@ class LlamaService
             "stream" => false
         ]);
 
+
         return $response->json();
+    }
+
+    private function sendToChatGPT($prompt)
+    {
+        // $client = OpenAI::client(env('OPENAI_API_KEY'));
+        $client = OpenAI::client(env('OPENAI_API_KEY'));
+
+        // $response = Http::timeout(500)->post($this->apiUrl, [
+        //     'model' => 'gpt-4',
+        //     'messages'=> [
+        //         [
+        //             "role"=> "user",
+        //             "content"=>  $prompt,
+        //         ],
+        //     ],
+        //     'max_tokens' => 500,  // Adjust to avoid cutoff
+        //     'temperature' => 0.7,
+        // ]);
+
+        $response = $client->chat()->create([
+            'model' => 'gpt-4',
+            'messages'=> [
+                [
+                    "role"=> "user",
+                    "content"=>  $prompt,
+                ],
+            ],
+            'max_tokens' => 500,  // Adjust to avoid cutoff
+            'temperature' => 0.7,
+        ]);
+
+        // if($response['choices'][0]['message']['content'] != '' && strlen($response['choices'][0]['message']['content'])>100)
+        //  dd($response['choices'][0]['message']['content']);
+
+        return $response['choices'][0]['message'] ?? [];
     }
 }

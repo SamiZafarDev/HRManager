@@ -14,9 +14,10 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use League\CommonMark\Node\Block\Document;
-use OpenAI;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+
+use function Laravel\Prompts\alert;
 
 class DocManagerController extends Controller
 {
@@ -197,11 +198,11 @@ class DocManagerController extends Controller
         }
     }
 
-
     public function rankDocuments(Request $request, LlamaService $llama)
     {
         $documents = Documents::where('user_id', Auth::user()->id)->get();
         $extractedTexts = [];
+
 
         foreach ($documents as $doc) {
             $filePath = storage_path("app/public/documents/{$doc->name}");
@@ -220,8 +221,8 @@ class DocManagerController extends Controller
                 ];
             }
         }
-
         // Send extracted text to OpenAI for ranking
+
         $rankedDocs = $this->sendToAI($extractedTexts, $llama);
 
         $rankedData = $this->sortResponseInRanks($rankedDocs);
@@ -244,61 +245,6 @@ class DocManagerController extends Controller
         ]);
     }
 
-    private function sendToChatGPT($documents)
-    {
-        $client = OpenAI::client(env('OPENAI_API_KEY'));
-
-        // Split documents into batches of 10-20 to avoid exceeding token limits
-        $batchSize = 10; // Adjust based on token size
-        $chunks = array_chunk($documents, $batchSize);
-        $rankedResults = [];
-
-        foreach ($chunks as $batchIndex => $batch) {
-            $prompt = "
-                Objective:
-                    Rank the resumes of candidates applying for a Web Frontend Developer position based on the following criteria:
-                    - Relevant Experience (5+ years preferred)
-                    - Stability (1+ year in a single company)
-                    - Skills (React, JavaScript, HTML, CSS)
-                    - Education & Certifications
-                    - Projects & Portfolio
-                Instructions:
-                    - Extract key details (Experience, Skills, Education, Certifications, Projects).
-                    - Rank them into High, Medium, and Low Priority.
-                    - Provide a brief explanation for the ranking.
-                \n\n";
-
-            $userPrompt = AISettings::where('user_id', Auth::id())->first();
-            if ($userPrompt) {
-                $prompt = $userPrompt->prompt . "
-                    Instructions:
-                        - Extract key details (Experience, Skills, Education, Certifications, Projects).
-                        - Rank them into High, Medium, and Low Priority.
-                        - Provide a brief explanation for the ranking.
-                    \n\n";
-            }
-
-
-            foreach ($batch as $index => $doc) {
-                $prompt .= ($index + 1) . ". {$doc['name']}:\n" . substr($doc['content'], 500) . "\n\n"; // Limit size
-            }
-
-            $response = $client->completions()->create([
-                'model' => 'gpt-4',
-                'prompt' => $prompt,
-                'max_tokens' => 500,  // Adjust to avoid cutoff
-                'temperature' => 0.7,
-            ]);
-
-            $rankedResults[] = [
-                'batch' => $batchIndex + 1,
-                'rankings' => $response['choices'][0]['text'],
-            ];
-        }
-
-        return $rankedResults;
-    }
-
     private function sendToAI($documents, LlamaService $llama)
     {
         // Split documents into batches of 10-20 to avoid exceeding token limits
@@ -307,28 +253,28 @@ class DocManagerController extends Controller
         $rankedResults = [];
 
         foreach ($chunks as $batch) {
-            $prompt = "
-                Objective:
-                    Rank the resumes of candidates applying for a Web Frontend Developer position based on the following criteria:
-                    - Relevant Experience (5+ years preferred)
-                    - Stability (1+ year in a single company)
-                    - Skills (React, JavaScript, HTML, CSS)
-                    - Education & Certifications
-                    - Projects & Portfolio
-                Instructions:
-                    - Must rank resumes from 0 to 100. Template to follow \"Rank:32\".
-                    - Must get the email. Template to follow \"Email:example@gmail.com\".
-                    - Don't tell the thinking process.
-                    \n\n";
+            // $prompt = "
+            //     Objective:
+            //         Rank the resumes of candidates applying for a Web Frontend Developer position based on the following criteria:
+            //         - Relevant Experience (5+ years preferred)
+            //         - Stability (1+ year in a single company)
+            //         - Skills (React, JavaScript, HTML, CSS)
+            //         - Education & Certifications
+            //         - Projects & Portfolio
+            //     Instructions:
+            //         - Must rank resumes from 0 to 100. Template to follow \"Rank:32\".
+            //         - Must get the email. Template to follow \"Email:example@gmail.com\".
+            //         - Don't tell the thinking process.
+            //         \n\n";
 
-            $prompt = "
-                Objective:
-                    Rank the resumes of candidates applying for a Web Frontend Developer position based on the following criteria:
-                Instructions:
-                    - Must rank resumes from 0 to 100. Template to follow \"Rank:32\".
-                    - Must found the email. Template to follow \"Email:example@gmail.com\".
-                    - Don't tell the thinking process.
-                    \n\n";
+            // $prompt = "
+            //     Objective:
+            //         Rank the resumes of candidates applying for a Web Frontend Developer position based on the following criteria:
+            //     Instructions:
+            //         - Must rank resumes from 0 to 100. Template to follow \"Rank:32\".
+            //         - Must found the email. Template to follow \"Email:example@gmail.com\".
+            //         - Don't tell the thinking process.
+            //         \n\n";
 
             $userPrompt = AISettings::where('user_id', Auth::user()->id)->first();
             if ($userPrompt) {
@@ -336,15 +282,21 @@ class DocManagerController extends Controller
                     Objective:
                     " . $userPrompt->prompt . "
                     Instructions:
-                        - Must rank resumes from 0 to 100. Template to follow \"Rank:32\".
+                        - First you must rank resumes from 0 to 100. Template to follow \"Rank:32\".
+                        - Limit the response to 300 characters don't exceed that.
+                        - Be concise and clear in your response.
                         - Must found the email from resume and plot it at {CANDIDATE EMAIL HERE}, if doesn't exist just don't give Email in response. Template to follow \"Email:{CANDIDATE EMAIL HERE}\".
                         - Don't tell the thinking process.
                     \n\n";
             }
 
+            // dd($doc['content']);
+
             foreach ($batch as $index => $doc) {
                 $prompt .= ($index + 1) . ". {$doc['name']} Candidate's Resume:\n" . substr($doc['content'], 0, length:1000) . "\n\n"; // Limit size
             }
+
+            // dd($prompt);
 
             $response = $this->sendMessageToAI($prompt, $llama);
             $response['content'] = substr($doc['content'], 0, length:1000);
@@ -371,10 +323,10 @@ class DocManagerController extends Controller
 
         $result = $llama->generateText($truncatedPrompt);
 
-        if (isset($result['response'])) {
+        if (isset($result['content'])) {
             $data = [
                 'prompt' => $prompt,
-                'response' => $result['response']
+                'response' => $result['content'],
             ];
             return $data;
         }
@@ -464,7 +416,8 @@ class DocManagerController extends Controller
         foreach ($rankedDocuments as $rankdocument) {
             $docDetails = [
                 'doc_id' => $rankdocument['doc']['document_id'],
-                'stats'  => substr($rankdocument['doc']['response']['content'], 0, length:500) .' response: '. $rankdocument['doc']['response']['response'],
+                // 'stats'  => substr($rankdocument['doc']['response']['content'], 0, length:500) .' response: '. $rankdocument['doc']['response']['response'],
+                'stats'  => substr($rankdocument['doc']['response']['response'], 0, length:500),
                 'rank'   => $rankdocument['rank'],
                 'email'   => $rankdocument['email'],
             ];

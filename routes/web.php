@@ -41,17 +41,19 @@ Route::get('/promptInput', function () {
     return view('promptInput');
 })->name('promptInput');
 
-// Ranked Documents
-Route::get('/rankDocuments', [DocManagerController::class, 'rankDocuments'])->name('rankDocuments');
-Route::get('/rankedDocuments', function () {
-    return view('/rankedDocuments/rankDocumentsDisplayView');
-})->name('rankedDocuments');
+
 
 // Interview Details and Schedules
 Route::resource('interviewDetails', InterviewDetailsController::class)->except(['show']);
 Route::resource('interviewSchedules', InterviewScheduleController::class);
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Ranked Documents
+    Route::get('/rankDocuments', [DocManagerController::class, 'rankDocuments'])->name('rankDocuments');
+    Route::get('/rankedDocuments', function () {
+        return view('/rankedDocuments/rankDocumentsDisplayView');
+    })->name('rankedDocuments');
+
     Route::get('/document-details', [DocManagerController::class, 'getDocumentDetails'])->name('document.details');
     Route::get('/getMyDocuments', [DocManagerController::class, 'getMyDocuments'])->name('getMyDocuments');
     Route::delete('/document/delete', [DocManagerController::class, 'delete'])->name('document.delete');

@@ -24,7 +24,7 @@ Route::middleware('auth:sanctum')
 
         Route::delete('/document/deleteMyDocuments', [DocManagerController::class, 'deleteMyDocuments']);
 
-        // Route::get('/rankDocuments', [DocManagerController::class, 'rankDocuments']);
+        Route::get('/rankDocuments', [DocManagerController::class, 'rankDocuments']);
 
 
         // Route::get('/getMyDocuments', [DocManagerController::class, 'getMyDocuments'])->name('getMyDocuments');
