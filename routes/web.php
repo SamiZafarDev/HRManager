@@ -23,31 +23,30 @@ Route::post('/loginUser', [AuthController::class, 'loginUser'])->name('loginUser
 Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/registerUser', [AuthController::class, 'registerUser'])->name('registerUser');
 
-// Home
-Route::get('/home', [HomeController::class, 'home'])->name('home');
-
-// Document Management
-Route::post('/document/uploadForm', [DocManagerController::class, 'upload'])->name('uploadDocumentForm');
-Route::get('/document/preview/{filename}', [DocManagerController::class, 'previewDocument'])->name('document.preview');
-Route::get('/documents', function () {
-    return view('documentsListing');
-})->name('documents.list');
-
-// AI Settings
-Route::get('/ai-settings', [AISettingsController::class, 'index'])->name('ai.settings.index');
-Route::post('/ai-settings-store', [AISettingsController::class, 'store'])->name('ai.settings.store');
-Route::get('/ai-settings-get', [AISettingsController::class, 'get'])->name('ai.settings.get');
-Route::get('/promptInput', function () {
-    return view('promptInput');
-})->name('promptInput');
-
-
-
-// Interview Details and Schedules
-Route::resource('interviewDetails', InterviewDetailsController::class)->except(['show']);
-Route::resource('interviewSchedules', InterviewScheduleController::class);
-
 Route::middleware(['auth:sanctum'])->group(function () {
+
+    // Home
+    Route::get('/home', [HomeController::class, 'home'])->name('home');
+
+    // Document Management
+    Route::post('/document/uploadForm', [DocManagerController::class, 'upload'])->name('uploadDocumentForm');
+    Route::get('/document/preview/{filename}', [DocManagerController::class, 'previewDocument'])->name('document.preview');
+    Route::get('/documents', function () {
+        return view('documentsListing');
+    })->name('documents.list');
+
+    // AI Settings
+    Route::get('/ai-settings', [AISettingsController::class, 'index'])->name('ai.settings.index');
+    Route::post('/ai-settings-store', [AISettingsController::class, 'store'])->name('ai.settings.store');
+    Route::get('/ai-settings-get', [AISettingsController::class, 'get'])->name('ai.settings.get');
+    Route::get('/promptInput', function () {
+        return view('promptInput');
+    })->name('promptInput');
+
+    // Interview Details and Schedules
+    Route::resource('interviewDetails', InterviewDetailsController::class)->except(['show']);
+    Route::resource('interviewSchedules', InterviewScheduleController::class);
+
     // Ranked Documents
     Route::get('/rankDocuments', [DocManagerController::class, 'rankDocuments'])->name('rankDocuments');
     Route::get('/rankedDocuments', function () {

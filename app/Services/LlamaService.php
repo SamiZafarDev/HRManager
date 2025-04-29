@@ -47,20 +47,7 @@ class LlamaService
 
     private function sendToChatGPT($prompt)
     {
-        // $client = OpenAI::client(env('OPENAI_API_KEY'));
-        $client = OpenAI::client(env('OPENAI_API_KEY'));
-
-        // $response = Http::timeout(500)->post($this->apiUrl, [
-        //     'model' => 'gpt-4',
-        //     'messages'=> [
-        //         [
-        //             "role"=> "user",
-        //             "content"=>  $prompt,
-        //         ],
-        //     ],
-        //     'max_tokens' => 500,  // Adjust to avoid cutoff
-        //     'temperature' => 0.7,
-        // ]);
+        $client = OpenAI::client(env("OPENAI_API_KEY"));
 
         $response = $client->chat()->create([
             'model' => 'gpt-4',
