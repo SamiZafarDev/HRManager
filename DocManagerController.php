@@ -253,36 +253,50 @@ class DocManagerController extends Controller
         $rankedResults = [];
 
         foreach ($chunks as $batch) {
+            // $prompt = "
+            //     Objective:
+            //         Rank the resumes of candidates applying for a Web Frontend Developer position based on the following criteria:
+            //         - Relevant Experience (5+ years preferred)
+            //         - Stability (1+ year in a single company)
+            //         - Skills (React, JavaScript, HTML, CSS)
+            //         - Education & Certifications
+            //         - Projects & Portfolio
+            //     Instructions:
+            //         - Must rank resumes from 0 to 100. Template to follow \"Rank:32\".
+            //         - Must get the email. Template to follow \"Email:example@gmail.com\".
+            //         - Don't tell the thinking process.
+            //         \n\n";
+
+            // $prompt = "
+            //     Objective:
+            //         Rank the resumes of candidates applying for a Web Frontend Developer position based on the following criteria:
+            //     Instructions:
+            //         - Must rank resumes from 0 to 100. Template to follow \"Rank:32\".
+            //         - Must found the email. Template to follow \"Email:example@gmail.com\".
+            //         - Don't tell the thinking process.
+            //         \n\n";
+
             $userPrompt = AISettings::where('user_id', Auth::user()->id)->first();
-            if ($userPrompt == null) {
-                $prompt = "
-                        Rank the resumes of candidates applying for a Web Frontend Developer position based on the following criteria:
-                        - Relevant Experience (5+ years preferred)
-                        - Stability (1+ year in a single company)
-                        - Skills (React, JavaScript, HTML, CSS)
-                        - Education & Certifications
-                        - Projects & Portfolio";
-                    $userPrompt = AISettings::create([
-                    'user_id' => Auth::user()->id,
-                    'prompt' => $prompt,
-                ]);
-            }
             if ($userPrompt) {
                 $prompt = "
                     Objective:
                     " . $userPrompt->prompt . "
                     Instructions:
                         - First you must rank resumes from 0 to 100. Template to follow \"Rank:32\".
-                        - Limit the response to 230 characters don't exceed that.
+                        - Limit the response to 300 characters don't exceed that.
                         - Be concise and clear in your response.
                         - Must found the email from resume and plot it at {CANDIDATE EMAIL HERE}, if doesn't exist just don't give Email in response. Template to follow \"Email:{CANDIDATE EMAIL HERE}\".
                         - Don't tell the thinking process.
                     \n\n";
             }
 
+            // dd($doc['content']);
+
             foreach ($batch as $index => $doc) {
-                $prompt .= ($index + 1) . ". {$doc['name']} Candidate's Resume:\n" . substr($doc['content'], 0, length:300) . "\n\n"; // Limit size
+                $prompt .= ($index + 1) . ". {$doc['name']} Candidate's Resume:\n" . substr($doc['content'], 0, length:1000) . "\n\n"; // Limit size
             }
+
+            // dd($prompt);
 
             $response = $this->sendMessageToAI($prompt, $llama);
             $response['content'] = substr($doc['content'], 0, length:1000);

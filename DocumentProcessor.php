@@ -12,7 +12,7 @@ class DocumentProcessor
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
         switch ($extension) {
             case 'pdf':
-                return self::extractFromPdf($filePath);
+                return Pdf::getText($filePath);
             case 'docx':
                 return self::extractFromDocx($filePath);
             case 'txt':
@@ -53,16 +53,5 @@ class DocumentProcessor
         }
 
         return empty($text) ? 'No content' : $text;
-    }
-
-    private static function extractFromPdf(string $filePath): string
-    {
-        try {
-            $parser = new \Smalot\PdfParser\Parser();
-            $pdf = $parser->parseFile($filePath);
-            return $pdf->getText();
-        } catch (\Exception $e) {
-            throw new \RuntimeException("PDF extraction failed: " . $e->getMessage());
-        }
     }
 }
