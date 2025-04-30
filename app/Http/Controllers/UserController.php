@@ -9,6 +9,7 @@ use App\Enums\StorageFolder;
 use App\Http\Requests\ProfilePictureRequest;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 
 class UserController extends Controller
 {
@@ -52,6 +53,14 @@ class UserController extends Controller
         }
     }
 
+    public function getUserProfile(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $request->user(),
+        ]);
+    }
+
     public function deleteProfilePic(Request $request){
         try {
             $profilePic = FileManager::deleteFile($request->profile_picture,  StorageFolder::PROFILE_PICTURES);
@@ -72,5 +81,80 @@ class UserController extends Controller
         }
 
         return response()->json(['profilePic'=>$profilePic]);
+    }
+
+    public function updateUserProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $request->user()->id,
+        ]);
+
+        $user = $request->user();
+        $user->update($request->only('name', 'email'));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully.',
+            'data' => $user,
+        ]);
+    }
+
+    public function requestPasswordReset(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+        $status = Password::sendResetLink($request->only('email'));
+
+        return $status === Password::RESET_LINK_SENT
+            ? response()->json(['success' => true, 'message' => __($status)])
+            : response()->json(['success' => false, 'message' => __($status)]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                ])->save();
+
+                $user->tokens()->delete(); // Invalidate all tokens
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? response()->json(['success' => true, 'message' => __($status)])
+            : response()->json(['success' => false, 'message' => __($status)]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|confirmed|min:8',
+        ]);
+
+        if (!Hash::check($request->current_password, $request->user()->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Current password is incorrect.',
+            ]);
+        }
+
+        $request->user()->update([
+            'password' => Hash::make($request->new_password),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password changed successfully.',
+        ]);
     }
 }

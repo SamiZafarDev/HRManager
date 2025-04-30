@@ -2,23 +2,31 @@
 
 namespace App\Helpers;
 
-use Spatie\PdfToText\Pdf;
+// use Spatie\PdfToText\Pdf;
 use Exception;
+use Illuminate\Support\Facades\Log;
+use Smalot\PdfParser\Parser;
 
 class DocumentProcessor
 {
     public static function extractText($filePath)
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-        switch ($extension) {
-            case 'pdf':
-                return self::extractFromPdf($filePath);
-            case 'docx':
-                return self::extractFromDocx($filePath);
-            case 'txt':
-                return file_get_contents($filePath);
-            default:
-                throw new Exception("Unsupported file format: $extension");
+        try {
+            switch ($extension) {
+                case 'pdf':
+                    return self::extractFromPdf($filePath);
+                case 'docx':
+                    return self::extractFromDocx($filePath);
+                case 'txt':
+                    return file_get_contents($filePath);
+                default:
+                    throw new \Exception("Unsupported file format: $extension");
+            }
+        } catch (\Exception $e) {
+            // Log the error and skip the file
+            Log::error("File extraction failed for file: {$filePath}. Error: " . $e->getMessage());
+            throw new \Exception("File extraction failed: " . $e->getMessage());
         }
     }
 
@@ -58,8 +66,16 @@ class DocumentProcessor
     private static function extractFromPdf(string $filePath): string
     {
         try {
-            $parser = new \Smalot\PdfParser\Parser();
-            $pdf = $parser->parseFile($filePath);
+            // Check file size (e.g., 10MB limit)
+            if (filesize($filePath) > 10 * 1024 * 1024) {
+                throw new \Exception("File size exceeds the allowed limit.");
+            }
+
+            $parser = new Parser();
+            // $pdf = $parser->parseFile($filePath);
+            $fileContent = file_get_contents($filePath);
+            $pdf = $parser->parseContent($fileContent);
+
             return $pdf->getText();
         } catch (\Exception $e) {
             throw new \RuntimeException("PDF extraction failed: " . $e->getMessage());

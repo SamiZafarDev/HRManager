@@ -6,21 +6,25 @@ use App\Enums\StorageFolder;
 use App\Helpers\DocumentProcessor;
 use App\Helpers\FileManager;
 use App\Http\Requests;
+use App\Jobs\RankDocumentsJob;
 use App\Models\AISettings;
 use App\Models\Documents;
 use App\Models\DocumentsDetails;
 use App\Services\LlamaService;
+use App\Traits\ResponseTrait;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use League\CommonMark\Node\Block\Document;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 use function Laravel\Prompts\alert;
 
 class DocManagerController extends Controller
 {
+    use ResponseTrait;
     public function upload(Requests\DocumentUploadRequest $request)
     {
         try {
@@ -33,9 +37,23 @@ class DocManagerController extends Controller
                 $this->uploadDocument($document, $user->id, $documentsUploaded);
             }
 
+            if ($request->header('Accept') == 'application/json'){
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Document uploaded successfully.',
+                    'data' => $documentsUploaded,
+                ]);
+            }
             session()->flash('success', 'Document uploaded successfully.');
             return redirect()->back();
         } catch (\Throwable $th) {
+
+            if ($request->header('Accept') == 'application/json'){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unable to upload document: ' . $th->getMessage(),
+                ]);
+            }
             session()->flash('error', 'Unable to upload document: ' . $th->getMessage());
             return redirect()->back();
         }
@@ -80,25 +98,13 @@ class DocManagerController extends Controller
                 throw new Exception("Document not found.");
             }
 
-            // Delete the document details
             DocumentsDetails::where('doc_id', $docId)->delete();
-
-            // Delete the document
             $document->delete();
-
-            // Delete the file from storage
             FileManager::deleteFile($document->name, StorageFolder::DOCUMENTS);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Document deleted successfully',
-            ]);
+            return ResponseTrait::success([], 'Document deleted successfully');
         } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete document.',
-                'error' => $th->getMessage(),
-            ]);
+            return ResponseTrait::error('Failed to delete document', ['error' => $th->getMessage()]);
         }
     }
     public function getMyDocuments(Request $request)
@@ -200,40 +206,52 @@ class DocManagerController extends Controller
 
     public function rankDocuments(Request $request, LlamaService $llama)
     {
-        $documents = Documents::where('user_id', Auth::user()->id)->get();
-        $extractedTexts = [];
-
+        $userid = Auth::user()->id;
+        $documents = Documents::where('user_id', $userid)->get();
 
         foreach ($documents as $doc) {
-            $filePath = storage_path("app/public/documents/{$doc->name}");
-            try {
-                $text = DocumentProcessor::extractText($filePath);
-                $extractedTexts[] = [
-                    'id' => $doc->id,
-                    'name' => $doc->name,
-                    'content' => $text
-                ];
-            } catch (\Exception $e) {
-                $extractedTexts[] = [
-                    'id' => $doc->id,
-                    'name' => $doc->name,
-                    'error' => "Error processing {$doc->name}: " . $e->getMessage()
-                ];
-            }
+            RankDocumentsJob::dispatch($doc, $userid, $llama);
         }
-        // Send extracted text to OpenAI for ranking
-
-        $rankedDocs = $this->sendToAI($extractedTexts, $llama);
-
-        $rankedData = $this->sortResponseInRanks($rankedDocs);
-
-        $this->createDetailsOfRankedDocs($rankedData);
 
         return response()->json([
-            'rankedDocuments' => $rankedDocs,
-            'rankedData' => $rankedData,
+            'success' => true,
+            'message' => 'Documents are being ranked. This may take some time.',
         ]);
     }
+    // public function rankDocuments(Request $request, LlamaService $llama)
+    // {
+    //     $documents = Documents::where('user_id', Auth::user()->id)->get();
+    //     $extractedTexts = [];
+
+    //     foreach ($documents as $doc) {
+    //         $filePath = storage_path("app/public/documents/{$doc->name}");
+    //         try {
+    //             $text = DocumentProcessor::extractText($filePath);
+    //             $extractedTexts[] = [
+    //                 'id' => $doc->id,
+    //                 'name' => $doc->name,
+    //                 'content' => $text
+    //             ];
+    //         } catch (\Exception $e) {
+    //             $extractedTexts[] = [
+    //                 'id' => $doc->id,
+    //                 'name' => $doc->name,
+    //                 'content' => 'No Content',
+    //                 'error' => "Error processing {$doc->name}: " . $e->getMessage()
+    //             ];
+    //         }
+    //     }
+
+    //     $rankedDocs = $this->sendToAI($extractedTexts, $llama);
+    //     $rankedData = $this->sortResponseInRanks($rankedDocs);
+
+    //     $this->createDetailsOfRankedDocs($rankedData);
+
+    //     return ResponseTrait::success([
+    //         'rankedDocuments' => $rankedDocs,
+    //         'rankedData' => $rankedData,
+    //     ], 'Documents ranked successfully');
+    // }
 
     public function testSortResponseInRanks(Request $request)
     {
@@ -245,7 +263,7 @@ class DocManagerController extends Controller
         ]);
     }
 
-    private function sendToAI($documents, LlamaService $llama)
+    public function sendToAI($documents, $userid, LlamaService $llama)
     {
         // Split documents into batches of 10-20 to avoid exceeding token limits
         $batchSize = 1; // Adjust based on token size
@@ -253,7 +271,7 @@ class DocManagerController extends Controller
         $rankedResults = [];
 
         foreach ($chunks as $batch) {
-            $userPrompt = AISettings::where('user_id', Auth::user()->id)->first();
+            $userPrompt = AISettings::where('user_id', $userid)->first();
             if ($userPrompt == null) {
                 $prompt = "
                         Rank the resumes of candidates applying for a Web Frontend Developer position based on the following criteria:
@@ -263,7 +281,7 @@ class DocManagerController extends Controller
                         - Education & Certifications
                         - Projects & Portfolio";
                     $userPrompt = AISettings::create([
-                    'user_id' => Auth::user()->id,
+                    'user_id' => $userid,
                     'prompt' => $prompt,
                 ]);
             }
@@ -351,7 +369,7 @@ class DocManagerController extends Controller
     }
 
 
-    private function sortResponseInRanks($rankedDocs)
+    public function sortResponseInRanks($rankedDocs)
     {
         $rankedArray = [];
 
@@ -397,7 +415,7 @@ class DocManagerController extends Controller
     }
 
     // Setting Doc details
-    private function createDetailsOfRankedDocs($rankedDocuments)
+    public function createDetailsOfRankedDocs($rankedDocuments)
     {
         foreach ($rankedDocuments as $rankdocument) {
             $docDetails = [
@@ -420,7 +438,6 @@ class DocManagerController extends Controller
     {
         if (Auth::user() == null) {
             return response()->json([
-
                 'data' => 'not found'
             ]);
         }

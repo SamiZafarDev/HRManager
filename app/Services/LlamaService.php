@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Enum;
 use OpenAI;
 
@@ -47,7 +48,9 @@ class LlamaService
 
     private function sendToChatGPT($prompt)
     {
-        $client = OpenAI::client(env("OPENAI_API_KEY"));
+        $key = env("OPENAI_API_KEY");
+        Log::info("OPENAI_API_KEY {$key}");
+        $client = OpenAI::client($key);
 
         $response = $client->chat()->create([
             'model' => 'gpt-4',

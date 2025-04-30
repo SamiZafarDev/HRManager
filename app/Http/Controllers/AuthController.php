@@ -38,7 +38,10 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'login success.',
-                'data' => ['token'=> $token],
+                'data' => [
+                    'user' => Auth::user(),
+                    'token'=> $token
+                ],
             ]);
         }
 
@@ -65,17 +68,22 @@ class AuthController extends Controller
     public function registerUser(Requests\RegisterRequest $request)
     {
         // Create the user
+        $token = Auth::user()->createToken('user_token')->plainTextToken;
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
+
         if ($request->header('Accept') == 'application/json') {
             return response()->json([
                 'status' => 'success',
                 'message' => 'User registered successfully',
-                'data' => $user,
+                'data' => [
+                    'user' => $user,
+                    'token' => $token,
+                ],
             ], 201);
         } else {
             // Attempt to log in the user
