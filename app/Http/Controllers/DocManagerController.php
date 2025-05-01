@@ -62,6 +62,7 @@ class DocManagerController extends Controller
     private function uploadDocument($document, $user_id, &$documentsUploaded)
     {
         try {
+            $documentOriginalName = $document->getClientOriginalName();
             $documentPath = FileManager::uploadFile($document, StorageFolder::DOCUMENTS);
             if ($documentPath == null) {
                 $documentsUploaded[] = [
@@ -75,6 +76,7 @@ class DocManagerController extends Controller
 
             $document = Documents::create([
                 'name' => $documentName,
+                'filename' => $documentOriginalName,
                 'user_id' => $user_id,
             ]);
             $document->save();
