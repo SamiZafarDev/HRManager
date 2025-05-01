@@ -13,6 +13,7 @@ use App\Models\DocumentsDetails;
 use App\Services\LlamaService;
 use App\Traits\ResponseTrait;
 use Exception;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use League\CommonMark\Node\Block\Document;
@@ -49,10 +50,7 @@ class DocManagerController extends Controller
         } catch (\Throwable $th) {
 
             if ($request->header('Accept') == 'application/json'){
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unable to upload document: ' . $th->getMessage(),
-                ]);
+                ResponseTrait::error('Unable to upload document: ' . $th->getMessage());
             }
             session()->flash('error', 'Unable to upload document: ' . $th->getMessage());
             return redirect()->back();

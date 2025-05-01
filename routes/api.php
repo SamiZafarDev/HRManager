@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AISettingsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DocManagerController;
 use App\Http\Controllers\EmailHandlerController;
@@ -35,6 +36,10 @@ Route::middleware('auth:sanctum')
         Route::get('/rankDocuments', [DocManagerController::class, 'rankDocuments']);
         Route::post('/send-email-schedule-interview', [DocManagerController::class, 'sendEmailscheduleInterview']);
         Route::post('/send-to-ai', [DocManagerController::class, 'sendToAI']);
+
+        // AI Settings
+        Route::post('/ai-settings-store', [AISettingsController::class, 'store']);
+        Route::get('/ai-settings-get', [AISettingsController::class, 'get']);
     });
 Route::post('/chatWithAI', [DocManagerController::class, 'chatWithAI']);
 Route::get('/testSortResponseInRanks', [DocManagerController::class, 'testSortResponseInRanks']);

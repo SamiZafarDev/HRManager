@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\AISettings;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\ResponseTrait;
 
 class AISettingsController extends Controller
 {
+    use ResponseTrait;
     public function store(Request $request)
     {
         $request->validate([
@@ -19,6 +21,9 @@ class AISettingsController extends Controller
             ['prompt' => $request->prompt] // Values to update or create
         );
 
+        if ($request->header('Accept') == 'application/json'){
+            return ResponseTrait::success([], 'AI Prompt saved successfully!');
+        }
         return redirect()->back()->with('success', 'AI Prompt saved successfully!');
     }
     public function get()
@@ -26,15 +31,13 @@ class AISettingsController extends Controller
         $aiSettings = AISettings::where('user_id', Auth::id())->first();
 
         if ($aiSettings) {
-            return response()->json([
-                'success' => true,
+            return ResponseTrait::success([
                 'prompt' => $aiSettings->prompt,
-            ]);
+            ], 'AI Prompt saved successfully!');
         } else {
-            return response()->json([
-                'success' => false,
-                'prompt' => null,
-            ]);
+            return ResponseTrait::error([
+                'prompt' => $aiSettings->prompt,
+            ], 'AI Prompt not found');
         }
     }
 
