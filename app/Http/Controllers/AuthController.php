@@ -75,6 +75,14 @@ class AuthController extends Controller
         ]);
 
         $token = $user->createToken('user_token')->plainTextToken;
+        return response()->json([
+            'status' => 'success',
+            'message' => 'User registered successfully',
+            'data' => [
+                'user' => $user,
+                'token' => $token,
+            ],
+        ], 200);
         if ($request->header('Accept') == 'application/json') {
             return response()->json([
                 'status' => 'success',
@@ -84,7 +92,8 @@ class AuthController extends Controller
                     'token' => $token,
                 ],
             ], 200);
-        } else {
+        }
+        else {
             // Attempt to log in the user
             if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
                 $request->session()->regenerate();
