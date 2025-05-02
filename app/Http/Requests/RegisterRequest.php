@@ -37,6 +37,16 @@ class RegisterRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator)
     {
+        if ($validator->header('Accept') === 'application/json') {
+            // Return JSON response for API requests
+            throw new HttpResponseException(
+                response()->json([
+                    'success' => false,
+                    'message' => 'Validation errors occurred.',
+                    'errors' => $validator->errors(),
+                ], 422)
+            );
+        }
         throw new HttpResponseException(
             redirect()->back()
                 ->withErrors($validator) // Pass validation errors

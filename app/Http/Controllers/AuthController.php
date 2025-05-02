@@ -75,14 +75,6 @@ class AuthController extends Controller
         ]);
 
         $token = $user->createToken('user_token')->plainTextToken;
-        return response()->json([
-            'status' => 'success',
-            'message' => 'User registered successfully',
-            'data' => [
-                'user' => $user,
-                'token' => $token,
-            ],
-        ], 200);
         if ($request->header('Accept') == 'application/json') {
             return response()->json([
                 'status' => 'success',
