@@ -83,7 +83,7 @@ class AuthController extends Controller
                     'user' => $user,
                     'token' => $token,
                 ],
-            ], 201);
+            ], 200);
         } else {
             // Attempt to log in the user
             if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
