@@ -68,14 +68,13 @@ class AuthController extends Controller
     public function registerUser(Requests\RegisterRequest $request)
     {
         // Create the user
-        $token = Auth::user()->createToken('user_token')->plainTextToken;
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-
+        $token = $user->createToken('user_token')->plainTextToken;
         if ($request->header('Accept') == 'application/json') {
             return response()->json([
                 'status' => 'success',
