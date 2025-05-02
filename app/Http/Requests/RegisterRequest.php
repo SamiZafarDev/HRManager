@@ -37,7 +37,7 @@ class RegisterRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator)
     {
-        if ($validator->header('Accept') === 'application/json') {
+        if ($this->expectsJson()) { // Check if the request expects a JSON response
             // Return JSON response for API requests
             throw new HttpResponseException(
                 response()->json([
@@ -47,6 +47,8 @@ class RegisterRequest extends FormRequest
                 ], 422)
             );
         }
+
+        // Handle non-API requests (e.g., form submissions)
         throw new HttpResponseException(
             redirect()->back()
                 ->withErrors($validator) // Pass validation errors
