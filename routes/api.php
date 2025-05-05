@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AISettingsController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardManagerController;
 use App\Http\Controllers\DocManagerController;
 use App\Http\Controllers\EmailHandlerController;
 use App\Http\Controllers\UserController;
@@ -40,6 +41,9 @@ Route::middleware('auth:sanctum')
         // AI Settings
         Route::post('/ai-settings-store', [AISettingsController::class, 'store']);
         Route::get('/ai-settings-get', [AISettingsController::class, 'get']);
+
+        // Dashboard
+        Route::get('/get-dashboard-data', [DashboardManagerController::class, 'getDashboardData']);
     });
 Route::post('/chatWithAI', [DocManagerController::class, 'chatWithAI']);
 Route::get('/testSortResponseInRanks', [DocManagerController::class, 'testSortResponseInRanks']);
