@@ -8,6 +8,7 @@ use App\Models\StaticEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Psy\CodeCleaner\AssignThisVariablePass;
 
 class EmailHandlerController extends Controller
 {
@@ -77,6 +78,16 @@ class EmailHandlerController extends Controller
         ]);
     }
 
+    private function replaceTagWithData(&$emailTemplate, $dataToReplace){
+        try {
+            foreach ($dataToReplace as $data) {
+                $emailTemplate = str_replace($data->tag, $data->valueToReplace, $emailTemplate);
+            }
+        } catch (\Throwable $th) {
+            echo('Can\'t find any start_time');
+        }
+    }
+
     private function replaceTagsWithData(&$emailTemplate, $interviewSchedules){
         try {
             $startTime = $interviewSchedules['start_time'];
@@ -94,22 +105,12 @@ class EmailHandlerController extends Controller
     }
 
 
-    public function sendEmail(Request $request)
+    public function sendEmailDirect(Request $request)
     {
-        $subject = "Interview Invite";
-        // $emailContent = $request->emailContent; // Use the email template as the message
+        $subject = $request->subject;
+        $emailContent = $request->content; // Use the email template as the message
         $email = $request->email;
 
-        // if(isset($emailContent))
-        {
-            $defaultTemplate = view('emailHandler.emailTemplate')->render();
-            $emailContent = html_entity_decode($defaultTemplate);
-        }
-
-        // Mail::raw($emailContent, function ($mail) use ($email, $subject) {
-        //     $mail->to($email)
-        //         ->subject($subject);
-        // });
         // Send the email as HTML
         try {
             Mail::html($emailContent, function ($mail) use ($email, $subject) {
@@ -121,5 +122,50 @@ class EmailHandlerController extends Controller
                 'error' => $th->getMessage(),
             ]);
         }
+    }
+
+    public function sendEmail(Request $request)
+    {
+        $subject = $request->subject;
+        $emailContent = $request->content; // Use the email template as the message
+        $email = $request->email;
+
+        if(isset($emailContent))
+        {
+            $defaultTemplate = view('emailHandler.emailTemplate')->render();
+            $emailContent = html_entity_decode($defaultTemplate);
+        }
+
+        // Send the email as HTML
+        try {
+            Mail::html($emailContent, function ($mail) use ($email, $subject) {
+                $mail->to($email)
+                    ->subject($subject);
+            });
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => $th->getMessage(),
+            ]);
+        }
+    }
+
+    public function sendForgetPasswordEmail(Request $request)
+    {
+        $emailTemplate = $this->replaceTagWithData(view('emailHandler.emailTemplate_forgertPassword')->render(), [
+            (object)[
+                'tag' => '{reset_link}',
+                'valueToReplace' => "https://preview--hr-manager.lovable.app/reset-password?token=" . $request->token,
+            ],
+            (object)[
+                'tag' => '{email}',
+                'valueToReplace' => $request->email,
+            ],
+        ]);
+
+        return $this->sendEmailDirect(new Request([
+            'subject' => "Interview Invite",
+            'email' => $request->email,
+            'email_template' => $emailTemplate,
+        ]));
     }
 }

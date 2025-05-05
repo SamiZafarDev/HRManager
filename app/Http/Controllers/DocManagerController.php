@@ -20,6 +20,7 @@ use League\CommonMark\Node\Block\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Symfony\Component\Mime\Test\Constraint\EmailHasHeader;
 
 use function Laravel\Prompts\alert;
 
@@ -514,7 +515,6 @@ class DocManagerController extends Controller
 
             // Extract the email template from the response
             $emailTemplate = $emailResponse->getData()->email_template;
-
             $emailTemplate = $emailHandlerController->getEmailWithAttributes($emailTemplate, $request->doc_id)->getdata();
             $emailTemplate = $emailTemplate->email_template;
             // dd($emailTemplate);
@@ -524,13 +524,19 @@ class DocManagerController extends Controller
                 throw new \Exception("No email provided.");
             }
 
-            $subject = "Interview Invite";
-            $emailContent = $emailTemplate; // Use the email template as the message
+            $emailHandlerController->sendEmailDirect(new Request([
+                'subject' => "Interview Invite",
+                'email' => $email,
+                'email_template' => $emailTemplate,
+            ]));
 
-            Mail::html($emailContent, function ($mail) use ($email, $subject) {
-                $mail->to($email)
-                    ->subject($subject);
-            });
+            // $subject = "Interview Invite";
+            // $emailContent = $emailTemplate; // Use the email template as the message
+
+            // Mail::html($emailContent, function ($mail) use ($email, $subject) {
+            //     $mail->to($email)
+            //         ->subject($subject);
+            // });
 
             return response()->json([
                 'success' => true,

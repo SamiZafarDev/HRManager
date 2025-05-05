@@ -44,6 +44,10 @@ Route::middleware('auth:sanctum')
 
         // Dashboard
         Route::get('/get-dashboard-data', [DashboardManagerController::class, 'getDashboardData']);
+
+
+        // Edit user details
+        Route::post('/password/change', [AuthController::class, 'changePassword'])->middleware('auth:sanctum')->name('password.change'); // Change password for authenticated users
     });
 Route::post('/chatWithAI', [DocManagerController::class, 'chatWithAI']);
 Route::get('/testSortResponseInRanks', [DocManagerController::class, 'testSortResponseInRanks']);
@@ -51,3 +55,6 @@ Route::post('/sendEmailscheduleInterview', [DocManagerController::class, 'sendEm
 Route::post('/sendEmailTo', [EmailHandlerController::class, 'sendEmail']);
 
 
+// Reset Password APIs
+Route::post('/password/request-reset', [AuthController::class, 'requestPasswordReset'])->name('password.requestReset'); // Request password reset
+Route::post('/password/reset', [AuthController::class, 'resetPassword'])->name('password.reset'); // Reset password
