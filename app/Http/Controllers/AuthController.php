@@ -75,25 +75,32 @@ class AuthController extends Controller
         ]);
 
         $token = $user->createToken('user_token')->plainTextToken;
-        if ($request->header('Accept') == 'application/json') {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'User registered successfully',
-                'data' => [
-                    'user' => $user,
-                    'token' => $token,
-                ],
-            ], 200);
-        }
-        else {
-            // Attempt to log in the user
-            if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-                $request->session()->regenerate();
-                return redirect()->intended('/home'); // Redirect to homepage
-            }
+        return response()->json([
+            'status' => 'success',
+            'message' => 'User registered successfully',
+            'data' => [
+                'user' => $user,
+                'token' => $token,
+            ],
+        ], 200);
+    }
 
-            // If login fails, redirect to login page
-            return redirect()->intended('/login')->with('error', 'Registration successful. Please log in.');
+    public function registerUserWeb(Requests\RegisterRequest $request)
+    {
+        // Create the user
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Attempt to log in the user
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $request->session()->regenerate();
+            return redirect()->intended('/home'); // Redirect to homepage
         }
+
+        // If login fails, redirect to login page
+        return redirect()->intended('/login')->with('error', 'Registration successful. Please log in.');
     }
 }

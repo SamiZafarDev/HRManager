@@ -379,19 +379,11 @@ class DocManagerController extends Controller
             if (isset($docData['response']['response']) && preg_match('/Rank:\s*(\d+)/', str($docData['response']['response']), $matches)) {
                 $rank = (int)$matches[1]; // Convert to integer if match found
             }
-
-            // Get email from AI
-            // $email = null;
-            // if (isset($docData['response']['response']) && preg_match('/Email:\s*(\d+)/', str($docData['response']['response']), $matches)) {
-            //     $email = (int)$matches[1]; // Convert to integer if match found
-            // }
-
             $email = null;
             if (isset($docData['response']['response']) && preg_match('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $docData['response']['response'], $matches)) {
                 $email = $matches[0]; // Extract the email address
             }
 
-            // echo("rank" .":".$rank);
             $rankedArray[] = [
                 'rank' => $rank,
                 'email' => $email,
