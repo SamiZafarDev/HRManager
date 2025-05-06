@@ -95,6 +95,7 @@ class UserController extends Controller
         $user->update($request->only('name', 'email', "company_name"));
 
         return response()->json([
+            'name' => $request->name,
             'success' => true,
             'message' => 'Profile updated successfully.',
             'data' => $user,
