@@ -60,12 +60,12 @@ class EmailHandlerController extends Controller
             'email_template' => $emailTemplate,
         ]);
     }
-    public function getEmailWithAttributes($emailTemplate, $docId){
+    public function getEmailWithAttributes($emailTemplate, $docId, $company_name){
         $interviewSchedules = InterviewDetails::where('user_id', Auth::id())->where('doc_id', $docId)->first();
 
         if($interviewSchedules){
 
-            $this->replaceTagsWithData($emailTemplate, $interviewSchedules);
+            $this->replaceTagsWithData($emailTemplate, $interviewSchedules, $company_name);
 
             return response()->json([
                 'success' => true,
@@ -104,7 +104,7 @@ class EmailHandlerController extends Controller
         }
 
         try {
-            $emailTemplate = str_replace('{company_name}', $companyName, $emailTemplate);
+            $emailTemplate = str_replace('{company name}', $companyName, $emailTemplate);
         } catch (\Throwable $th) {
             echo('Can\'t find any end_time');
         }
