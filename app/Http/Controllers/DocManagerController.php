@@ -208,14 +208,47 @@ class DocManagerController extends Controller
         $userid = Auth::user()->id;
         $documents = Documents::where('user_id', $userid)->get();
 
+        $data_fetched = [];
         foreach ($documents as $doc) {
-            RankDocumentsJob::dispatch($doc, $userid, $llama);
+            // RankDocumentsJob::dispatch($doc, $userid, $llama);
+            $data_fetched[] = $this->rankDocumentsJob($doc, $userid, $llama);
         }
 
         return response()->json([
             'success' => true,
+            'data' => $data_fetched,
             'message' => 'Documents are being ranked. This may take some time.',
         ]);
+    }
+    public function rankDocumentsJob($doc, $userid, $llama)
+    {
+        $filePath = storage_path("app/public/documents/{$doc->name}");
+        try {
+            Log::info("extractText {$doc->name}: ");
+            $text = \App\Helpers\DocumentProcessor::extractText($filePath);
+            $extractedText = [
+                'id' => $doc->id,
+                'name' => $doc->name,
+                'content' => $text,
+            ];
+
+            $rankedDocs = $this->sendToAI([$extractedText], $userid, $llama);
+            $rankedData = $this->sortResponseInRanks($rankedDocs);
+
+            $this->createDetailsOfRankedDocs($rankedData);
+            Log::info("Creating details of RankedDocs {$doc->name}: ");
+            return response()->json([
+                'success' => true,
+                'message' => 'Documents ranked successfully.',
+            ]);
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            Log::error("Error processing document {$doc->name}: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
     // public function rankDocuments(Request $request, LlamaService $llama)
     // {
