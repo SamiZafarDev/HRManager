@@ -501,7 +501,7 @@ class DocManagerController extends Controller
         $request->validate([
             'email' => 'required|string|email|max:255',
             'doc_id' => 'required|exists:documents,id',
-            'time' => 'required|date_format:H:i',
+            'time' => 'required|date_format:Y-m-d\TH:i',
         ]);
 
         try {
@@ -528,9 +528,10 @@ class DocManagerController extends Controller
                 'content' => $emailTemplate,
             ]));
 
+            $document = Documents::where('id', $request->doc_id)->first();
             $interviewDetailsController->store(new Request([
                 'doc_id' => $request->doc_id,
-                'name' => $request->name,
+                'name' => $document->name,
                 'email' => $request->email,
                 'start_time' => $request->time,
             ]));

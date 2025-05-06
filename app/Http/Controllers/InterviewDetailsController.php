@@ -57,7 +57,7 @@ class InterviewDetailsController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255',
             'start_time' => 'required|date_format:Y-m-d\TH:i',
-            'end_time' => 'required|date_format:Y-m-d\TH:i|after:start_time',
+            'end_time' => 'optional|date_format:Y-m-d\TH:i|after:start_time',
         ]);
 
         try {
