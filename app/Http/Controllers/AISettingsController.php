@@ -31,13 +31,9 @@ class AISettingsController extends Controller
         $aiSettings = AISettings::where('user_id', Auth::id())->first();
 
         if ($aiSettings) {
-            return ResponseTrait::success([
-                'prompt' => $aiSettings->prompt,
-            ], 'AI Prompt saved successfully!');
+            return ResponseTrait::success($aiSettings, 'AI Prompt saved successfully!');
         } else {
-            return ResponseTrait::error([
-                'prompt' => $aiSettings->prompt,
-            ], 'AI Prompt not found');
+            return ResponseTrait::error($aiSettings, 'AI Prompt not found');
         }
     }
 

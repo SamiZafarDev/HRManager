@@ -34,6 +34,8 @@ Route::middleware('auth:sanctum')
         Route::get('/document/user/{user_id}', [DocManagerController::class, 'getDocumentsOfUser']);
         Route::delete('/document/delete', [DocManagerController::class, 'deleteDocuments']);
 
+        Route::post('/document/upload-public-document', [DocManagerController::class, 'uploadPublicDocument']);
+
         // Document Ranking and AI Routes
         Route::get('/rankDocuments', [DocManagerController::class, 'rankDocuments']);
         Route::post('/send-email-schedule-interview', [DocManagerController::class, 'sendEmailscheduleInterview']);

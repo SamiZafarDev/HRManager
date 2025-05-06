@@ -10,6 +10,7 @@ use App\Jobs\RankDocumentsJob;
 use App\Models\AISettings;
 use App\Models\Documents;
 use App\Models\DocumentsDetails;
+use App\Models\User;
 use App\Services\LlamaService;
 use App\Traits\ResponseTrait;
 use Exception;
@@ -41,14 +42,14 @@ class DocManagerController extends Controller
             }
 
             if ($request->header('Accept') == 'application/json'){
-                ResponseTrait::success($documentsUploaded, 'Document uploaded successfully.');
+                return ResponseTrait::success($documentsUploaded, 'Document uploaded successfully.');
             }
             session()->flash('success', 'Document uploaded successfully.');
             return redirect()->back();
         } catch (\Throwable $th) {
 
             if ($request->header('Accept') == 'application/json'){
-                ResponseTrait::error('Unable to upload document: ' . $th->getMessage());
+                return ResponseTrait::error('Unable to upload document: ' . $th->getMessage());
             }
             session()->flash('error', 'Unable to upload document: ' . $th->getMessage());
             return redirect()->back();
@@ -245,7 +246,7 @@ class DocManagerController extends Controller
 
     //     $this->createDetailsOfRankedDocs($rankedData);
 
-    //     return ResponseTrait::success([
+    //     return return ResponseTrait::success([
     //         'rankedDocuments' => $rankedDocs,
     //         'rankedData' => $rankedData,
     //     ], 'Documents ranked successfully');
@@ -531,7 +532,7 @@ class DocManagerController extends Controller
             $document = Documents::where('id', $request->doc_id)->first();
             $interviewDetailsController->store(new Request([
                 'doc_id' => $request->doc_id,
-                'name' => $document->name,
+                'name' => $document->filename,
                 'email' => $request->email,
                 'start_time' => $request->time,
             ]));
@@ -546,6 +547,44 @@ class DocManagerController extends Controller
                 'message' => 'Failed to send email.',
                 'error' => $th->getMessage(),
             ]);
+        }
+    }
+
+    public function getPublicLink($doc_id)
+    {
+        $document = Documents::where('id', $doc_id)->first();
+        if ($document == null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Document not found.',
+            ]);
+        }
+        return response()->json([
+            'success' => true,
+            'document' => $document,
+        ]);
+    }
+
+    public function uploadPublicDocument(Requests\DocumentUploadRequest $request)
+    {
+        $request->validate([
+            'ai_settings_id' => 'required|exists:ai_settings,id'
+        ]);
+        try {
+            $aisettings = AISettings::where('id', $request->ai_settings_id)->first();
+            if($aisettings == null) throw new Exception("AI Settings not found.");
+            $user = User::where('id', $aisettings->user_id)->first();
+            if($user == null) throw new Exception("User not found.");
+
+            $documents = $request->file('documents');
+            $documentsUploaded = [];
+            foreach ($documents as $document) {
+                $this->uploadDocument($document, $user->id, $documentsUploaded);
+            }
+
+            return ResponseTrait::success($documentsUploaded, 'Document uploaded successfully.');
+        } catch (\Throwable $th) {
+            return ResponseTrait::error('Unable to upload document: ' . $th->getMessage());
         }
     }
 }

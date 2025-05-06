@@ -37,8 +37,6 @@ class DocumentUploadRequest extends FormRequest
     protected function failedValidation(Validator $validator)
     {
         // Dump the entire request data (use only for debugging)
-        dd($this->all());
-
         throw new HttpResponseException(response()->json([
             'success' => false,
             'message' => 'Validation failed',
