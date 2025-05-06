@@ -88,7 +88,7 @@ class EmailHandlerController extends Controller
         }
     }
 
-    private function replaceTagsWithData(&$emailTemplate, $interviewSchedules){
+    private function replaceTagsWithData(&$emailTemplate, $interviewSchedules, $companyName){
         try {
             $startTime = $interviewSchedules['start_time'];
             $emailTemplate = str_replace('{start time}', $startTime, $emailTemplate);
@@ -97,8 +97,14 @@ class EmailHandlerController extends Controller
         }
 
         try {
-            $startTime = $interviewSchedules['end_time'];
-            $emailTemplate = str_replace('{end time}', $startTime, $emailTemplate);
+            $endTime = $interviewSchedules['end_time'];
+            $emailTemplate = str_replace('{end time}', $endTime, $emailTemplate);
+        } catch (\Throwable $th) {
+            echo('Can\'t find any end_time');
+        }
+
+        try {
+            $emailTemplate = str_replace('{company_name}', $companyName, $emailTemplate);
         } catch (\Throwable $th) {
             echo('Can\'t find any end_time');
         }

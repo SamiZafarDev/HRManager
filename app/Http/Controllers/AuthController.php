@@ -73,6 +73,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'company_name' => $request->company_name,
         ]);
 
         $token = $user->createToken('user_token')->plainTextToken;
@@ -93,6 +94,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'company_name' => $request->company_name,
         ]);
 
         // Attempt to log in the user

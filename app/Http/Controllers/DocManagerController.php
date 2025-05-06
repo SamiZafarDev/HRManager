@@ -515,7 +515,7 @@ class DocManagerController extends Controller
 
             // Extract the email template from the response
             $emailTemplate = $emailResponse->getData()->email_template;
-            $emailTemplate = $emailHandlerController->getEmailWithAttributes($emailTemplate, $request->doc_id)->getdata();
+            $emailTemplate = $emailHandlerController->getEmailWithAttributes($emailTemplate, $request->doc_id, Auth::user()->company_name)->getdata();
             $emailTemplate = $emailTemplate->email_template;
             // dd($emailTemplate);
 
@@ -527,16 +527,8 @@ class DocManagerController extends Controller
             $emailHandlerController->sendEmailDirect(new Request([
                 'subject' => "Interview Invite",
                 'email' => $email,
-                'email_template' => $emailTemplate,
+                'content' => $emailTemplate,
             ]));
-
-            // $subject = "Interview Invite";
-            // $emailContent = $emailTemplate; // Use the email template as the message
-
-            // Mail::html($emailContent, function ($mail) use ($email, $subject) {
-            //     $mail->to($email)
-            //         ->subject($subject);
-            // });
 
             return response()->json([
                 'success' => true,

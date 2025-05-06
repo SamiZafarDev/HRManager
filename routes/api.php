@@ -51,7 +51,7 @@ Route::middleware('auth:sanctum')
     });
 Route::post('/chatWithAI', [DocManagerController::class, 'chatWithAI']);
 Route::get('/testSortResponseInRanks', [DocManagerController::class, 'testSortResponseInRanks']);
-Route::post('/sendEmailscheduleInterview', [DocManagerController::class, 'sendEmailscheduleInterview']);
+// Route::post('/sendEmailscheduleInterview', [DocManagerController::class, 'sendEmailscheduleInterview']);
 Route::post('/sendEmailTo', [EmailHandlerController::class, 'sendEmail']);
 
 

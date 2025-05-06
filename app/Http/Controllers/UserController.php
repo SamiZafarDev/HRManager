@@ -88,10 +88,11 @@ class UserController extends Controller
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $request->user()->id,
+            'company_name' => 'sometimes|string|max:255',
         ]);
 
         $user = $request->user();
-        $user->update($request->only('name', 'email'));
+        $user->update($request->only('name', 'email', "company_name"));
 
         return response()->json([
             'success' => true,
