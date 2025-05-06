@@ -27,6 +27,7 @@ use function Laravel\Prompts\alert;
 class DocManagerController extends Controller
 {
     use ResponseTrait;
+
     public function upload(Requests\DocumentUploadRequest $request)
     {
         try {
@@ -495,11 +496,12 @@ class DocManagerController extends Controller
 
 
 
-    public function sendEmailscheduleInterview(Request $request)
+    public function sendEmailscheduleInterview(Request $request, InterviewDetailsController $interviewDetailsController)
     {
         $request->validate([
             'email' => 'required|string|email|max:255',
-            'doc_id' => 'required|exists:documents,id'
+            'doc_id' => 'required|exists:documents,id',
+            'time' => 'required|date_format:H:i',
         ]);
 
         try {
@@ -526,12 +528,18 @@ class DocManagerController extends Controller
                 'content' => $emailTemplate,
             ]));
 
+            $interviewDetailsController->store(new Request([
+                'doc_id' => $request->doc_id,
+                'name' => $request->name,
+                'email' => $request->email,
+                'start_time' => $request->time,
+            ]));
+
             return response()->json([
                 'success' => true,
                 'message' => 'Email sent successfully',
             ]);
         } catch (\Throwable $th) {
-            dd($th->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to send email.',
