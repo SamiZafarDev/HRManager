@@ -10,6 +10,7 @@ use App\Http\Requests\ProfilePictureRequest;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
+use App\Traits\ResponseTrait;
 
 class UserController extends Controller
 {
@@ -91,14 +92,19 @@ class UserController extends Controller
             'company_name' => 'sometimes|string|max:255',
         ]);
 
-        $user = $request->user();
-        $user->update($request->only('name', 'email', "company_name"));
+        try {
+            $user = $request->user();
+            $user->update($request->only('name', 'email', "company_name"));
 
-        return response()->json([
-            'name' => $request->name,
-            'success' => true,
-            'message' => 'Profile updated successfully.',
-            'data' => $user,
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile updated successfully.',
+                'data' => $user,
+            ]);
+            ResponseTrait::success($user, 'Profile updated successfully.');
+        } catch (\Throwable $th) {
+            ResponseTrait::error("Profile can\'t be update due to {$th->getMessage()}", [], 500);
+        }
+
     }
 }
