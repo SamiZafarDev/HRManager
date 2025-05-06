@@ -34,8 +34,6 @@ Route::middleware('auth:sanctum')
         Route::get('/document/user/{user_id}', [DocManagerController::class, 'getDocumentsOfUser']);
         Route::delete('/document/delete', [DocManagerController::class, 'deleteDocuments']);
 
-        Route::post('/document/upload-public-document', [DocManagerController::class, 'uploadPublicDocument']);
-
         // Document Ranking and AI Routes
         Route::get('/rankDocuments', [DocManagerController::class, 'rankDocuments']);
         Route::post('/send-email-schedule-interview', [DocManagerController::class, 'sendEmailscheduleInterview']);
@@ -67,3 +65,7 @@ Route::post('/sendEmailTo', [EmailHandlerController::class, 'sendEmail']);
 // Reset Password APIs
 Route::post('/password/request-reset', [AuthController::class, 'requestPasswordReset'])->name('password.requestReset'); // Request password reset
 Route::post('/password/reset', [AuthController::class, 'resetPassword'])->name('password.reset'); // Reset password
+
+// Upload Public Document
+Route::post('/document/upload-public-document', [DocManagerController::class, 'uploadPublicDocument']);
+
