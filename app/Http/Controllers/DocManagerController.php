@@ -40,11 +40,7 @@ class DocManagerController extends Controller
             }
 
             if ($request->header('Accept') == 'application/json'){
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Document uploaded successfully.',
-                    'data' => $documentsUploaded,
-                ]);
+                ResponseTrait::success($documentsUploaded, 'Document uploaded successfully.');
             }
             session()->flash('success', 'Document uploaded successfully.');
             return redirect()->back();

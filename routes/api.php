@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardManagerController;
 use App\Http\Controllers\DocManagerController;
 use App\Http\Controllers\EmailHandlerController;
+use App\Http\Controllers\InterviewDetailsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,13 +39,19 @@ Route::middleware('auth:sanctum')
         Route::post('/send-email-schedule-interview', [DocManagerController::class, 'sendEmailscheduleInterview']);
         Route::post('/send-to-ai', [DocManagerController::class, 'sendToAI']);
 
+        // Interview Details and Schedules
+        Route::get('/interview-details-get', [InterviewDetailsController::class, 'get']);
+        Route::get('/interview-details-store', [InterviewDetailsController::class, 'store']);
+        Route::get('/interview-details-update', [InterviewDetailsController::class, 'update']);
+        Route::get('/interview-details-delete', [InterviewDetailsController::class, 'destroy']);
+        // Route::resource('/interviewSchedules', InterviewScheduleController::class);
+
         // AI Settings
         Route::post('/ai-settings-store', [AISettingsController::class, 'store']);
         Route::get('/ai-settings-get', [AISettingsController::class, 'get']);
 
         // Dashboard
         Route::get('/get-dashboard-data', [DashboardManagerController::class, 'getDashboardData']);
-
 
         // Edit user details
         Route::post('/password/change', [AuthController::class, 'changePassword'])->middleware('auth:sanctum')->name('password.change'); // Change password for authenticated users
