@@ -39,7 +39,8 @@ class UserController extends Controller
                 FileManager::deleteFile($user->profile_picture,  StorageFolder::PROFILE_PICTURES);
             }
             $parts = explode('/', $profilePicPath);
-            $user->profile_picture = end($parts);
+            // $user->profile_picture = end($parts);
+            $user->profile_picture = $profilePicPath;
             $user->save();
 
             $user->path = StorageFolder::PROFILE_PICTURES->publicPath();
@@ -73,15 +74,16 @@ class UserController extends Controller
         return response()->json(['profilePic'=>$profilePic]);
     }
 
-    public function getUrlProfilePic(Request $request){
+    public function getUrlProfilePic($profilePicture)
+    {
         try {
-            $profilePic = FileManager::getFileUrlFromName($request->profile_picture,  StorageFolder::PROFILE_PICTURES);
+            // Get the file URL using the profile picture name from the URL parameter
+            $profilePic = FileManager::getFileUrlFromName($profilePicture, StorageFolder::PROFILE_PICTURES);
         } catch (\Throwable $th) {
-            // dd($th);
-            return response()->json(['error'=>$th->getMessage()]);
+            return response()->json(['error' => $th->getMessage()], 500);
         }
 
-        return response()->json(['profilePic'=>$profilePic]);
+        return response()->json(['profilePic' => $profilePic]);
     }
 
     public function updateUserProfile(Request $request)
