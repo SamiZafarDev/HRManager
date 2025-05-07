@@ -305,18 +305,9 @@ class DocManagerController extends Controller
         foreach ($chunks as $batch) {
             $userPrompt = AISettings::where('user_id', $userid)->first();
             if ($userPrompt == null) {
-                $prompt = "
-                        Rank the resumes of candidates applying for a Web Frontend Developer position based on the following criteria:
-                        - Relevant Experience (5+ years preferred)
-                        - Stability (1+ year in a single company)
-                        - Skills (React, JavaScript, HTML, CSS)
-                        - Education & Certifications
-                        - Projects & Portfolio";
-                    $userPrompt = AISettings::create([
-                    'user_id' => $userid,
-                    'prompt' => $prompt,
-                ]);
+                $userPrompt = AISettingsController::createDefaultPrompt($userid);
             }
+            $prompt = '';
             if ($userPrompt) {
                 $prompt = "
                     Objective:

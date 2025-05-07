@@ -28,7 +28,10 @@ class AISettingsController extends Controller
     }
     public function get()
     {
-        $aiSettings = AISettings::where('user_id', Auth::id())->first();
+        $userid = Auth::id();
+        $aiSettings = AISettings::where('user_id', $userid)->first();
+        if($aiSettings == null)
+            $aiSettings = AISettingsController::createDefaultPrompt($userid);
 
         if ($aiSettings) {
             return ResponseTrait::success($aiSettings, 'AI Prompt saved successfully!');
@@ -41,5 +44,21 @@ class AISettingsController extends Controller
     {
         $aiSettings = AISettings::where('user_id', Auth::id())->get();
         return view('ai_settings.index', compact('aiSettings'));
+    }
+
+    public static function createDefaultPrompt($userid)
+    {
+        $prompt = "
+                Rank the resumes of candidates applying for a Web Frontend Developer position based on the following criteria:
+                - Relevant Experience (5+ years preferred)
+                - Stability (1+ year in a single company)
+                - Skills (React, JavaScript, HTML, CSS)
+                - Education & Certifications
+                - Projects & Portfolio";
+        $userPrompt = AISettings::create([
+            'user_id' => $userid,
+            'prompt' => $prompt,
+        ]);
+        return $userPrompt;
     }
 }
