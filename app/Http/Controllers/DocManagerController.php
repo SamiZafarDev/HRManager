@@ -340,6 +340,8 @@ class DocManagerController extends Controller
 
     private function sendMessageToAI(string $prompt, LlamaService $llama)
     {
+        $prompt = preg_replace('/^\s+/m', '', $prompt); // remove extra spaces
+
         $maxLength = 2000; // Keeping it below the 2048 token limit
         $truncatedPrompt = $this->truncatePrompt($prompt, $maxLength);
 
