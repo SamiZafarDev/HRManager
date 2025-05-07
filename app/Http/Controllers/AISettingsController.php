@@ -48,13 +48,13 @@ class AISettingsController extends Controller
 
     public static function createDefaultPrompt($userid)
     {
-        $prompt = "
-                Rank the resumes of candidates applying for a Web Frontend Developer position based on the following criteria:
+        $prompt = preg_replace('/^\s+/', '', "
+                - Rank the resumes of candidates applying for a Web Frontend Developer position
                 - Relevant Experience (5+ years preferred)
                 - Stability (1+ year in a single company)
                 - Skills (React, JavaScript, HTML, CSS)
                 - Education & Certifications
-                - Projects & Portfolio";
+                - Projects & Portfolio");
         $userPrompt = AISettings::create([
             'user_id' => $userid,
             'prompt' => $prompt,
