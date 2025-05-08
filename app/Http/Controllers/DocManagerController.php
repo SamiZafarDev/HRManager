@@ -210,8 +210,8 @@ class DocManagerController extends Controller
 
         $data_fetched = [];
         foreach ($documents as $doc) {
-            // RankDocumentsJob::dispatch($doc, $userid, $llama);
-            $data_fetched[] = $this->rankDocumentsJob($doc, $userid, $llama);
+            RankDocumentsJob::dispatch($doc, $userid, $llama);
+            // $data_fetched[] = $this->rankDocumentsJob($doc, $userid, $llama);
         }
 
         return response()->json([
