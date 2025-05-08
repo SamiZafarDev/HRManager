@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\StorageFolder;
 use App\Helpers\DocumentProcessor;
 use App\Helpers\FileManager;
+use App\Helpers\QueueManager;
 use App\Http\Requests;
 use App\Jobs\RankDocumentsJob;
 use App\Models\AISettings;
@@ -213,6 +214,7 @@ class DocManagerController extends Controller
             RankDocumentsJob::dispatch($doc, $userid, $llama);
             // $data_fetched[] = $this->rankDocumentsJob($doc, $userid, $llama);
         }
+        QueueManager::startQueueWorker();
 
         return response()->json([
             'success' => true,
