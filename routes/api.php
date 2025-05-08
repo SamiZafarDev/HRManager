@@ -26,13 +26,12 @@ Route::middleware('auth:sanctum')
 
         // Document Management Routes
         Route::post('/document/upload', [DocManagerController::class, 'upload']);
-        Route::post('/document/delete', [DocManagerController::class, 'delete']);
+        Route::delete('/document/delete', [DocManagerController::class, 'delete']);
         Route::get('/document/my', [DocManagerController::class, 'getMyDocuments']);
         Route::get('/document-details', [DocManagerController::class, 'getDocumentDetails']);
         Route::delete('/document/delete-my-documents', [DocManagerController::class, 'deleteMyDocuments']);
         Route::get('/document/preview/{filename}', [DocManagerController::class, 'previewDocument']);
         Route::get('/document/user/{user_id}', [DocManagerController::class, 'getDocumentsOfUser']);
-        Route::delete('/document/delete', [DocManagerController::class, 'deleteDocuments']);
 
         // Document Ranking and AI Routes
         Route::get('/rankDocuments', [DocManagerController::class, 'rankDocuments']);
