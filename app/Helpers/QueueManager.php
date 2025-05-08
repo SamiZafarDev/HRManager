@@ -12,7 +12,6 @@ class QueueManager
 {
     public static function startQueueWorker()
     {
-        if(self::isQueueWorkerRunning()) return;
         $process = new Process([
             'php',
             base_path('artisan'),
@@ -24,16 +23,7 @@ class QueueManager
         $process->start();
 
         while ($process->isRunning()) {
+
         }
-    }
-    /**
-     * Check if a queue worker is already running.
-     *
-     * @return bool
-     */
-    private static function isQueueWorkerRunning(): bool
-    {
-        // Check the queue size or use a custom mechanism to detect running workers
-        return Queue::size() > 0; // Example: Modify this logic based on your requirements
     }
 }
