@@ -454,7 +454,7 @@ class DocManagerController extends Controller
             // Update the is_analyzed attribute in the Documents model
             $document = Documents::find($docDetails['doc_id']);
             if ($document) {
-                $document->is_analyzed = 1;
+                $document->is_analyzed = true;
                 $document->save();
             }
         }
