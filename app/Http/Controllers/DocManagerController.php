@@ -450,6 +450,13 @@ class DocManagerController extends Controller
                 ['doc_id' => $rankdocument['doc']['document_id']], // Matching criteria
                 $docDetails // Values to update or create
             );
+
+            // Update the is_analyzed attribute in the Documents model
+            $document = Documents::find($rankdocument['doc']['document_id']);
+            if ($document) {
+                $document->is_analyzed = true;
+                $document->save();
+            }
         }
     }
 

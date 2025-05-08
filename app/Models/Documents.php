@@ -17,6 +17,7 @@ class Documents extends Model
         'name',
         'filename',
         'user_id',
+        'is_analyzed',
     ];
 
     public function user(): BelongsTo
