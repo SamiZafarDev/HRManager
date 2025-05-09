@@ -119,5 +119,14 @@ class DashboardManagerController extends Controller
             return ResponseTrait::error('Couldn\'t recieve queue count due to: '.$th->getMessage());
         }
     }
+    public function startQueue()
+    {
+        try {
+            QueueManager::startQueueWorker();
+            return ResponseTrait::success(['queue_size'=>QueueManager::queueSize()], 'Queue count retrieved successfully');
+        } catch (\Throwable $th) {
+            return ResponseTrait::error('Couldn\'t recieve queue count due to: '.$th->getMessage());
+        }
+    }
 
 }

@@ -62,7 +62,5 @@ class RankDocumentsJob implements ShouldQueue
             // Log the error for debugging
             Log::error("Error processing document {$this->document->name}: " . $e->getMessage());
         }
-
-        QueueManager::startQueueWorker();
     }
 }
