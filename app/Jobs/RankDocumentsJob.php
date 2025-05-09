@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Helpers\QueueManager;
 use App\Models\Documents;
 use App\Services\LlamaService;
 use App\Http\Controllers\DocManagerController;
@@ -61,5 +62,7 @@ class RankDocumentsJob implements ShouldQueue
             // Log the error for debugging
             Log::error("Error processing document {$this->document->name}: " . $e->getMessage());
         }
+
+        // QueueManager::startQueueWorker();
     }
 }
