@@ -11,33 +11,36 @@ class QueueManager
     public static function startQueueWorker()
     {
         try {
-            $queueSize = self::queueSize();
-            $process = null;
-            $process = new Process([
-                'php',
-                base_path('artisan'),
-                'queue:work',
-                '--max-jobs=1',       // Process 10 jobs at a time
-                '--stop-when-empty',
-                '--sleep=3',            // Sleep 3 seconds between jobs
-                '--tries=3'             // Retry failed jobs 3 times
-            ]);
-            while ($queueSize > 0) {
+            while (self::queueSize() > 0) {
+                $process = new Process([
+                    'php',
+                    base_path('artisan'),
+                    'queue:work',
+                    '--max-jobs=1',       // Process 1 job at a time
+                    '--stop-when-empty',  // Stop when the queue is empty
+                    '--sleep=3',          // Sleep 3 seconds between jobs
+                    '--tries=3'           // Retry failed jobs 3 times
+                ]);
 
-                if ($queueSize > 0 && !$process->isRunning()) {
+                $process->setTimeout(null); // Disable Symfony process timeout
+                $process->start();          // Start the process
 
-                    $process->setTimeout(null);
-                    $process->run();
-
-                    // Log process output for debugging
-                    Log::info('Queue worker output: ' . $process->getOutput());
-                    Log::error('Queue worker error: ' . $process->getErrorOutput());
+                // Monitor the process
+                while ($process->isRunning()) {
+                    // Optionally log or monitor the process here
+                    Log::info('Queue worker is running...');
+                    sleep(5); // Prevent tight looping
                 }
-                else {
-                    // No jobs in queue, sleep before checking again
-                    sleep(30);
+
+                // Log process output for debugging
+                if (!$process->isSuccessful()) {
+                    Log::error('Queue worker error: ' . $process->getErrorOutput());
+                } else {
+                    Log::info('Queue worker output: ' . $process->getOutput());
                 }
             }
+
+            Log::info('Queue worker finished processing all jobs.');
         } catch (\Exception $e) {
             Log::error('Queue worker failed: ' . $e->getMessage());
         }
