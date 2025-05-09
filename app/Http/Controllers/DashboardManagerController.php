@@ -7,6 +7,8 @@ use App\Models\DocumentsDetails;
 use App\Models\InterviewDetails;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTrait;
+use App\Helpers\QueueManager;
+use Illuminate\Queue\Queue;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardManagerController extends Controller
@@ -107,6 +109,15 @@ class DashboardManagerController extends Controller
             'pendingInterviews' => $pendingInterviews,
             'timeFrame' => 'Next '.$nextDays.' days',
         ];
+    }
+
+    public function getQueueCount()
+    {
+        try {
+            return ResponseTrait::success(['queue_size'=>QueueManager::queueSize()], 'Queue count retrieved successfully');
+        } catch (\Throwable $th) {
+            return ResponseTrait::error('Couldn\'t recieve queue count due to: '.$th->getMessage());
+        }
     }
 
 }

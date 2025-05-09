@@ -26,4 +26,8 @@ class QueueManager
 
         }
     }
+    public static function queueSize()
+    {
+        return Queue::size();
+    }
 }

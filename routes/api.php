@@ -51,6 +51,7 @@ Route::middleware('auth:sanctum')
 
         // Dashboard
         Route::get('/get-dashboard-data', [DashboardManagerController::class, 'getDashboardData']);
+        Route::get('/get-queue-size', [DashboardManagerController::class, 'getQueueCount']);
 
         // Edit user details
         Route::post('/password/change', [AuthController::class, 'changePassword'])->middleware('auth:sanctum')->name('password.change'); // Change password for authenticated users
