@@ -11,39 +11,29 @@ class QueueManager
     public static function startQueueWorker()
     {
         try {
-            // while (self::queueSize() > 0) {
-            //     $process = new Process([
-            //         'php',
-            //         base_path('artisan'),
-            //         'queue:listen',
-            //         '--max-jobs=1',       // Process 1 job at a time
-            //         '--stop-when-empty',  // Stop when the queue is empty
-            //         '--sleep=3',          // Sleep 3 seconds between jobs
-            //         '--tries=3'           // Retry failed jobs 3 times
-            //     ]);
+            // Check if the process is already running
+            $existingProcess = new Process(['pgrep', '-f', 'queue:listen']);
+            $existingProcess->run();
 
-            //     $process->setTimeout(null); // Disable Symfony process timeout
-            //     $process->start();          // Start the process
+            if ($existingProcess->isSuccessful()) {
+                // Stop the existing process
+                $pid = trim($existingProcess->getOutput());
+                Log::info("Stopping existing queue worker process with PID: $pid");
+                $stopProcess = new Process(['kill', $pid]);
+                $stopProcess->run();
 
-            //     // Monitor the process
-            //     while ($process->isRunning()) {
-            //         // Optionally log or monitor the process here
-            //         Log::info('Queue worker is running...');
-            //         sleep(5); // Prevent tight looping
-            //     }
+                if (!$stopProcess->isSuccessful()) {
+                    Log::error('Failed to stop the existing queue worker process.');
+                    return;
+                }
+            }
 
-            //     // Log process output for debugging
-            //     if (!$process->isSuccessful()) {
-            //         Log::error('Queue worker error: ' . $process->getErrorOutput());
-            //     } else {
-            //         Log::info('Queue worker output: ' . $process->getOutput());
-            //     }
-            // }
-
+            // Start a new queue worker process
             $process = new Process([
                 'php',
                 base_path('artisan'),
                 'queue:listen',
+                '--max-jobs=1',
                 '--sleep=3',          // Sleep 3 seconds between jobs
                 '--tries=3'           // Retry failed jobs 3 times
             ]);
