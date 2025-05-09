@@ -9,14 +9,13 @@ use Symfony\Component\Process\Process;
 
 class QueueManager
 {
-    public static function startQueueWorker()
+    public static function startQueueWorker($authToken)
     {
         try {
             $process = new Process([
                 'php',
                 base_path('artisan'),
                 'queue:listen',
-                '--max-jobs=1',
                 '--sleep=3',          // Sleep 3 seconds between jobs
                 '--tries=3'           // Retry failed jobs 3 times
             ]);
@@ -28,7 +27,13 @@ class QueueManager
                 // Check if 1 minute has passed
                 if (time() - $startTime >= 60) {
                     // Hit the API
-                    $response = Http::post(env("APP_URL").'/api/start-queue');
+                    Log::info('base url is:'.env("APP_URL"));
+                    Log::info('auth token:'.$authToken);
+
+                    $response = Http::withHeaders([
+                        'Content-Type' => 'application/json',
+                        'Authorization' => "Bearer $authToken"
+                    ])->get(env("APP_URL").'/api/start-queue');
 
                     // Log the API response
                     if ($response->successful()) {
@@ -39,6 +44,8 @@ class QueueManager
 
                     // Reset the start time
                     $startTime = time();
+
+                    return;
                 }
 
                 // Optionally log or monitor the process here

@@ -212,9 +212,9 @@ class DocManagerController extends Controller
         $data_fetched = [];
         foreach ($documents as $doc) {
             RankDocumentsJob::dispatch($doc, $userid, $llama);
-            // $data_fetched[] = $this->rankDocumentsJob($doc, $userid, $llama);
+            // $data_fetched[] = $this->rankDcumentsJob($doc, $userid, $llama);
         }
-        QueueManager::startQueueWorker();
+        QueueManager::startQueueWorker($request->bearerToken());
 
         return response()->json([
             'success' => true,
