@@ -50,6 +50,12 @@ class QueueManager
             $process->setTimeout(null); // Allow the process to run indefinitely
             $process->start();
 
+            while ($process->isRunning()) {
+                // Optionally log or monitor the process here
+                Log::info('Queue worker is running...');
+                sleep(5); // Prevent tight looping
+            }
+
             Log::info('Queue worker finished processing all jobs.');
         } catch (\Exception $e) {
             Log::error('Queue worker failed: ' . $e->getMessage());
