@@ -12,21 +12,26 @@ class QueueManager
     public static function startQueueWorker($authToken)
     {
         try {
-            // Check if a queue worker process is already running
-            $existingProcess = new Process(['pgrep', '-f', 'queue:listen']);
-            $existingProcess->run();
+            try {
+                // Check if a queue worker process is already running
+                $existingProcess = new Process(['pgrep', '-f', 'queue:listen']);
+                $existingProcess->run();
 
-            if ($existingProcess->isSuccessful()) {
-                // Stop the existing process
-                $pid = trim($existingProcess->getOutput());
-                Log::info("Stopping existing queue worker process with PID: $pid");
-                $stopProcess = new Process(['kill', $pid]);
-                $stopProcess->run();
+                if ($existingProcess->isSuccessful()) {
+                    // Stop the existing process
+                    $pid = trim($existingProcess->getOutput());
+                    Log::info("Stopping existing queue worker process with PID: $pid");
+                    $stopProcess = new Process(['kill', $pid]);
+                    $stopProcess->run();
 
-                if (!$stopProcess->isSuccessful()) {
-                    Log::error('Failed to stop the existing queue worker process.');
-                    return;
+                    if (!$stopProcess->isSuccessful()) {
+                        Log::error('Failed to stop the existing queue worker process.');
+                        return;
+                    }
                 }
+                //code...
+            } catch (\Throwable $th) {
+                Log::error('Error checking existing queue worker process: ' . $th->getMessage());
             }
 
             // Start a new queue worker process
