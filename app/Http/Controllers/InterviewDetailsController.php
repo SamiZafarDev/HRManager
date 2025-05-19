@@ -71,7 +71,7 @@ class InterviewDetailsController extends Controller
             ]);
 
             $DocManagerController = new DocManagerController();
-            $DocManagerController->sendEmailscheduleInterview($request);
+            $DocManagerController->sendEmailscheduleInterview($request, $this);
 
             if($request->header('Accept') == 'application/json'){
                 return ResponseTrait::success($DocManagerController, 'Interview detail created successfully.');
@@ -165,5 +165,6 @@ class InterviewDetailsController extends Controller
             }
         }
     }
+
 
 }

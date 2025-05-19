@@ -56,6 +56,9 @@ Route::middleware('auth:sanctum')
 
         // Edit user details
         Route::post('/password/change', [AuthController::class, 'changePassword'])->middleware('auth:sanctum')->name('password.change'); // Change password for authenticated users
+
+        // Email Handler
+        Route::post('/get-interview-email-content', [EmailHandlerController::class, 'getInterviewEmailTemplate']); // Display email template form
     });
 Route::post('/chatWithAI', [DocManagerController::class, 'chatWithAI']);
 Route::get('/testSortResponseInRanks', [DocManagerController::class, 'testSortResponseInRanks']);

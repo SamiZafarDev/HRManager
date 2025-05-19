@@ -95,4 +95,10 @@ class InterviewScheduleController extends Controller
         $interviewSchedule->delete();
         return redirect()->route('interviewSchedules.index')->with('success', 'Interview schedule deleted successfully.');
     }
+
+
+    public function getInterviewSchedule($request, EmailHandlerController $emailHandlerController)
+    {
+        return $emailHandlerController->getInterviewEmailTemplate($request);
+    }
 }

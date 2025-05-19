@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\InterviewDetails;
 use App\Models\InterviewSchedule;
 use App\Models\StaticEmail;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -60,11 +61,11 @@ class EmailHandlerController extends Controller
             'email_template' => $emailTemplate,
         ]);
     }
-    public function getEmailWithAttributes($emailTemplate, $docId, $company_name){
-        $interviewSchedules = InterviewDetails::where('user_id', Auth::id())->where('doc_id', $docId)->first();
+    public function getEmailWithAttributes($emailTemplate, $userId, $docId, $company_name, $interviewSchedules=null){
+        if($interviewSchedules == null)
+            $interviewSchedules = InterviewDetails::where('user_id', $userId)->where('doc_id', $docId)->first();
 
         if($interviewSchedules){
-
             $this->replaceTagsWithData($emailTemplate, $interviewSchedules, $company_name);
 
             return response()->json([
@@ -90,14 +91,14 @@ class EmailHandlerController extends Controller
 
     private function replaceTagsWithData(&$emailTemplate, $interviewSchedules, $companyName){
         try {
-            $startTime = $interviewSchedules['start_time'];
+            $startTime = $this->convertTimeToReadableFormat($interviewSchedules['start_time']);
             $emailTemplate = str_replace('{start time}', $startTime, $emailTemplate);
         } catch (\Throwable $th) {
             echo('Can\'t find any start_time');
         }
 
         try {
-            $endTime = $interviewSchedules['end_time'];
+            $endTime = $this->convertTimeToReadableFormat($interviewSchedules['end_time']);
             $emailTemplate = str_replace('{end time}', $endTime, $emailTemplate);
         } catch (\Throwable $th) {
             echo('Can\'t find any end_time');
@@ -108,6 +109,15 @@ class EmailHandlerController extends Controller
         } catch (\Throwable $th) {
             echo('Can\'t find any end_time');
         }
+    }
+    private function convertTimeToReadableFormat($timestamp)
+    {
+        // Convert to Carbon instance
+        $date = Carbon::parse($timestamp);
+
+        // Format as readable text
+        $readable = $date->format('F j, Y \a\t g:i A');
+        return $readable;
     }
 
 
@@ -173,5 +183,26 @@ class EmailHandlerController extends Controller
             'email' => $request->email,
             'email_template' => $emailTemplate,
         ]));
+    }
+
+    public function getInterviewEmailTemplate(Request $request)
+    {
+        $interviewSchedules = null;
+        if($request->start_time != null){
+            $interviewSchedules = [
+                'start_time' => $request->start_time,
+                'end_time' => $request->end_time,
+            ];
+        }
+        $user = Auth::user();
+
+        // Call the get method and get the response
+        $emailResponse = $this->get();
+
+        // Extract the email template from the response
+        $emailContent = $emailResponse->getData()->email_template;
+        $emailContent = $this->getEmailWithAttributes($emailContent, $user->id, $request->doc_id, $user->company_name, $interviewSchedules)->getdata();
+        $emailContent = $emailContent->email_template;
+        return $emailContent;
     }
 }

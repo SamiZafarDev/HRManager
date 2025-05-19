@@ -543,15 +543,7 @@ class DocManagerController extends Controller
         try {
             // Instantiate the EmailHandlerController
             $emailHandlerController = new EmailHandlerController();
-
-            // Call the get method and get the response
-            $emailResponse = $emailHandlerController->get();
-
-            // Extract the email template from the response
-            $emailTemplate = $emailResponse->getData()->email_template;
-            $emailTemplate = $emailHandlerController->getEmailWithAttributes($emailTemplate, $request->doc_id, Auth::user()->company_name)->getdata();
-            $emailTemplate = $emailTemplate->email_template;
-            // dd($emailTemplate);
+            $emailTemplate = $emailHandlerController->getInterviewEmailTemplate($request);
 
             $email = $request->email;
             if (empty($email)) {
