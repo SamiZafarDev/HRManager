@@ -12,6 +12,8 @@ class QueueManager
     public static function startQueueWorker($authToken)
     {
         try {
+            if(self::queueSize() == 0)
+                return;
             try {
                 // Check if a queue worker process is already running
                 $existingProcess = new Process(['pgrep', '-f', 'queue:listen']);
@@ -46,7 +48,7 @@ class QueueManager
             $process->start();
 
             $startTime = time(); // Record the start time
-            while ($process->isRunning()) {
+            while ($process->isRunning() && self::queueSize() > 0) {
                 // Check if 1 minute has passed
                 if (time() - $startTime >= 60) {
                     // Hit the API
