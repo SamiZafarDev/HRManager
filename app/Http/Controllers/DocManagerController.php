@@ -157,7 +157,7 @@ class DocManagerController extends Controller
             ]);
         }
     }
-    private function getDocumentsOfUser($user_id)
+    public function getDocumentsOfUser($user_id)
     {
         try {
             $documents = Documents::where('user_id', $user_id)->get();
