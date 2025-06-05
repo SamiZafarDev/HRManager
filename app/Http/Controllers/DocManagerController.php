@@ -207,7 +207,7 @@ class DocManagerController extends Controller
     public function rankDocuments(Request $request, LlamaService $llama)
     {
         $userid = Auth::user()->id;
-        $documents = Documents::where('user_id', $userid)->get();
+        $documents = Documents::where('user_id', $userid)->where('is_analyzed', 0)->get();
 
         $data_fetched = [];
         foreach ($documents as $doc) {

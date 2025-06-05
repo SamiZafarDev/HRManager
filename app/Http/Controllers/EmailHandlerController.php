@@ -167,7 +167,9 @@ class EmailHandlerController extends Controller
 
     public function sendForgetPasswordEmail(Request $request)
     {
-        $emailTemplate = $this->replaceTagWithData(view('emailHandler.emailTemplate_forgertPassword')->render(), [
+        $emailRender = view('emailHandler.emailTemplate_forgertPassword')->render();
+        $emailRenderData = html_entity_decode($emailRender);
+        $this->replaceTagWithData($emailRenderData, [
             (object)[
                 'tag' => '{reset_link}',
                 'valueToReplace' => "https://preview--hr-manager.lovable.app/reset-password?token=" . $request->token,
@@ -179,9 +181,9 @@ class EmailHandlerController extends Controller
         ]);
 
         return $this->sendEmailDirect(new Request([
-            'subject' => "Interview Invite",
+            'subject' => "Peak America Forgot Password",
             'email' => $request->email,
-            'email_template' => $emailTemplate,
+            'content' => $emailRenderData,
         ]));
     }
 
