@@ -43,6 +43,7 @@ class RankDocumentsJob implements ShouldQueue
     {
         $docManager = new DocManagerController();
         $filePath = storage_path("app/public/documents/{$this->document->name}");
+        $file = fopen($filePath, 'r');
 
         try {
             Log::info("extractText {$this->document->name}: ");
@@ -53,7 +54,7 @@ class RankDocumentsJob implements ShouldQueue
                 'content' => $text,
             ];
 
-            $rankedDocs = $docManager->sendToAI([$extractedText], $this->userid, $this->llama);
+            $rankedDocs = $docManager->sendToAI([$extractedText], $this->userid, $file, $this->llama);
             $rankedData = $docManager->sortResponseInRanks($rankedDocs);
 
             $docManager->createDetailsOfRankedDocs($rankedData);

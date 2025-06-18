@@ -61,6 +61,7 @@ Route::middleware('auth:sanctum')
         Route::post('/get-interview-email-content', [EmailHandlerController::class, 'getInterviewEmailTemplate']); // Display email template form
     });
 Route::post('/chatWithAI', [DocManagerController::class, 'chatWithAI']);
+Route::post('/chatWithAI_Doc', [DocManagerController::class, 'chatWithAI_Doc']);
 Route::get('/testSortResponseInRanks', [DocManagerController::class, 'testSortResponseInRanks']);
 // Route::post('/sendEmailscheduleInterview', [DocManagerController::class, 'sendEmailscheduleInterview']);
 Route::post('/sendEmailTo', [EmailHandlerController::class, 'sendEmail']);

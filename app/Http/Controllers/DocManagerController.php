@@ -234,7 +234,7 @@ class DocManagerController extends Controller
                 'content' => $text,
             ];
 
-            $rankedDocs = $this->sendToAI([$extractedText], $userid, $llama);
+            $rankedDocs = $this->sendToAI([$extractedText], $userid, null, $llama);
             $rankedData = $this->sortResponseInRanks($rankedDocs);
 
             $this->createDetailsOfRankedDocs($rankedData);
@@ -297,7 +297,7 @@ class DocManagerController extends Controller
         ]);
     }
 
-    public function sendToAI($documents, $userid, LlamaService $llama)
+    public function sendToAI($documents, $userid, $file =null, LlamaService $llama)
     {
         // Split documents into batches of 10-20 to avoid exceeding token limits
         $batchSize = 1; // Adjust based on token size
@@ -316,9 +316,9 @@ class DocManagerController extends Controller
                     " . $userPrompt->prompt . "
                     Instructions:
                         - First you must rank resumes from 0 to 100. Template to follow \"Rank:32\".
-                        - Limit the response to 230 characters don't exceed that.
+                        - Also, give a very short summary limit the response to 230 characters don't exceed that.
                         - Be concise and clear in your response.
-                        - Must found the email from resume and plot it at {CANDIDATE EMAIL HERE}, if doesn't exist just don't give Email in response. Template to follow \"Email:{CANDIDATE EMAIL HERE}\".
+                        - Find email from resume and plot it at {CANDIDATE EMAIL HERE}, if doesn't exist just don't give Email in response. Template to follow \"Email:{CANDIDATE EMAIL HERE}\".
                         - Don't tell the thinking process.
                     \n\n";
             }
@@ -327,8 +327,12 @@ class DocManagerController extends Controller
                 $prompt .= ($index + 1) . ". {$doc['name']} Candidate's Resume:\n" . substr($doc['content'], 0, length:300) . "\n\n"; // Limit size
             }
 
-            $response = $this->sendMessageToAI($prompt, $llama);
-            $response['content'] = substr($doc['content'], 0, length:1000);
+            // $response = $this->sendMessageToAI($prompt, $llama);
+            // $response['content'] = substr($doc['content'], 0, length:1000);
+
+            $response = $this->sendMessageToAI($prompt, $llama, $file);
+            // $response['content'] = substr($doc['content'], 0, length:1000);
+            $response['content'] = $doc['content'];
 
             $rankedResults[] = [
                 "document_id" => $doc['id'],
@@ -340,7 +344,7 @@ class DocManagerController extends Controller
         return $rankedResults;
     }
 
-    private function sendMessageToAI(string $prompt, LlamaService $llama)
+    private function sendMessageToAI(string $prompt, LlamaService $llama, $file = null)
     {
         $prompt = preg_replace('/^\s+/m', '', $prompt); // remove extra spaces
 
@@ -364,7 +368,6 @@ class DocManagerController extends Controller
 
         return $result;
     }
-
     /**
      * Truncate a prompt to fit within the allowed token limit.
      */
@@ -394,7 +397,12 @@ class DocManagerController extends Controller
     {
         return $this->sendMessageToAI($request->prompt, $llama);
     }
-
+    public function chatWithAI_Doc(Request $request, LlamaService $llama)
+    {
+        if($request->has('file_id')){
+            return $llama->generateText($request->prompt, $request->file_id);
+        }
+    }
 
     public function sortResponseInRanks($rankedDocs)
     {
@@ -440,7 +448,7 @@ class DocManagerController extends Controller
             $docDetails = [
                 'doc_id' => $rankdocument['doc']['document_id'],
                 // 'stats'  => substr($rankdocument['doc']['response']['content'], 0, length:500) .' response: '. $rankdocument['doc']['response']['response'],
-                'stats'  => substr($rankdocument['doc']['response']['response'], 0, length:500),
+                'stats'  => $rankdocument['doc']['response']['response'],
                 'rank'   => $rankdocument['rank'],
                 'email'   => $rankdocument['email'],
             ];
